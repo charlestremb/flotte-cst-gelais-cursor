@@ -27,6 +27,7 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
     pnvb: "",
     nb_essieux: "",
     date_acquisition: "",
+    date_disposition: "",
     prix_achat: "",
     km_achat: "",
     notes: "",
@@ -61,6 +62,7 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
           pnvb: form.pnvb || null,
           nb_essieux: form.nb_essieux || null,
           date_acquisition: form.date_acquisition || null,
+          date_disposition: form.date_disposition || null,
           prix_achat: form.prix_achat ? parseFloat(form.prix_achat) : null,
           km_achat: form.km_achat ? parseInt(form.km_achat, 10) : null,
           notes: form.notes || null,
@@ -149,11 +151,15 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
             <input type="date" value={form.date_acquisition} onChange={(e) => update("date_acquisition", e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Prix d'achat</label>
+            <label className="text-xs text-muted-foreground">Date de disposition</label>
+            <input type="date" value={form.date_disposition} onChange={(e) => update("date_disposition", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Prix d'achat ($)</label>
             <input type="number" step="0.01" value={form.prix_achat} onChange={(e) => update("prix_achat", e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Km à l'achat</label>
+            <label className="text-xs text-muted-foreground">Km/h à l'achat</label>
             <input type="number" value={form.km_achat} onChange={(e) => update("km_achat", e.target.value)} className={inputCls} />
           </div>
           <div className="col-span-2">
