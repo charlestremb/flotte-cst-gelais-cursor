@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createInspection, TYPES_INSPECTION } from "@/lib/inspections.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { Upload, FileText, X } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -16,6 +18,8 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
   const [type, setType] = useState<string>(TYPES_INSPECTION[0]);
   const [datePlanifiee, setDatePlanifiee] = useState("");
   const [effectueePar, setEffectueePar] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   if (!open) return null;
@@ -36,6 +40,25 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
   const handleSubmit = async () => {
     if (!uniteId || !type) return;
     setSaving(true);
+
+    let documentUrl: string | null = null;
+    if (pdfFile) {
+      setUploading(true);
+      const ext = pdfFile.name.split(".").pop() ?? "pdf";
+      const path = `${uniteId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("inspection-documents")
+        .upload(path, pdfFile, { contentType: pdfFile.type || "application/pdf" });
+      setUploading(false);
+      if (upErr) {
+        alert("Erreur lors du téléversement: " + upErr.message);
+        setSaving(false);
+        return;
+      }
+      const { data: pub } = supabase.storage.from("inspection-documents").getPublicUrl(path);
+      documentUrl = pub.publicUrl;
+    }
+
     await createInspection({
       data: {
         unite_id: uniteId,
@@ -43,6 +66,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
         prochaine_inspection: datePlanifiee || null,
         effectuee_par: effectueePar || null,
         resultat: "En attente",
+        document_url: documentUrl,
       },
     });
     setSaving(false);
@@ -51,6 +75,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
     setType(TYPES_INSPECTION[0]);
     setDatePlanifiee("");
     setEffectueePar("");
+    setPdfFile(null);
     onCreated();
   };
 
@@ -58,7 +83,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold mb-4">Planifier une inspection</h3>
         <div className="space-y-3">
           {!preselectedUniteId && (
@@ -145,6 +170,42 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
               className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
+
+          <div>
+            <label className="text-sm text-muted-foreground">Document PDF (feuille d'inspection)</label>
+            {pdfFile ? (
+              <div className="mt-1 flex items-center justify-between rounded-lg border border-input bg-secondary px-3 py-2 text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <span className="truncate">{pdfFile.name}</span>
+                </div>
+                <button
+                  onClick={() => setPdfFile(null)}
+                  className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="mt-1 flex items-center justify-center gap-2 rounded-lg border border-dashed border-input bg-secondary px-3 py-4 text-sm text-muted-foreground cursor-pointer hover:bg-accent transition-colors">
+                <Upload className="h-4 w-4" />
+                <span>Cliquer pour sélectionner un PDF</span>
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setPdfFile(f);
+                  }}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-xs text-muted-foreground">
+            ✉️ Un courriel sera envoyé automatiquement au garage à la création.
+          </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
@@ -158,7 +219,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             disabled={!uniteId || saving}
             className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            {saving ? "Enregistrement..." : "Planifier"}
+            {uploading ? "Téléversement..." : saving ? "Enregistrement..." : "Planifier"}
           </button>
         </div>
       </div>
