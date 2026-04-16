@@ -29,6 +29,10 @@ function EquipementsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<Unite | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkStatut, setBulkStatut] = useState<string>("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
@@ -41,6 +45,48 @@ function EquipementsPage() {
       alert("Erreur lors de la suppression : " + (e as Error).message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const applyBulkStatut = async () => {
+    if (!bulkStatut || selected.size === 0) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          updateUnite({ data: { id, updates: { statut: bulkStatut } } })
+        )
+      );
+      setSelected(new Set());
+      setBulkStatut("");
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la mise à jour : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const applyBulkDelete = async () => {
+    setBulkBusy(true);
+    try {
+      await Promise.all(Array.from(selected).map((id) => deleteUnite({ data: { id } })));
+      setSelected(new Set());
+      setConfirmBulkDelete(false);
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la suppression : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
     }
   };
 
