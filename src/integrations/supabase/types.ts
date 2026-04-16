@@ -14,7 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      unites: {
+        Row: {
+          annee: number | null
+          assurance_expiration: string | null
+          categorie: string | null
+          couleur: string | null
+          created_at: string
+          date_acquisition: string | null
+          date_deremisage: string | null
+          date_disposition: string | null
+          date_maj_km: string | null
+          date_remisage: string | null
+          demande_par: string | null
+          entite: string
+          id: string
+          immatriculation_expiration: string | null
+          km_achat: number | null
+          km_actuel: number | null
+          marque: string | null
+          modele: string | null
+          nb_essieux: string | null
+          notes: string | null
+          numero_serie: string | null
+          numero_unite: string
+          plaque: string | null
+          pnvb: string | null
+          poids: string | null
+          prix_achat: number | null
+          reservoir: boolean | null
+          statut: string
+        }
+        Insert: {
+          annee?: number | null
+          assurance_expiration?: string | null
+          categorie?: string | null
+          couleur?: string | null
+          created_at?: string
+          date_acquisition?: string | null
+          date_deremisage?: string | null
+          date_disposition?: string | null
+          date_maj_km?: string | null
+          date_remisage?: string | null
+          demande_par?: string | null
+          entite: string
+          id?: string
+          immatriculation_expiration?: string | null
+          km_achat?: number | null
+          km_actuel?: number | null
+          marque?: string | null
+          modele?: string | null
+          nb_essieux?: string | null
+          notes?: string | null
+          numero_serie?: string | null
+          numero_unite: string
+          plaque?: string | null
+          pnvb?: string | null
+          poids?: string | null
+          prix_achat?: number | null
+          reservoir?: boolean | null
+          statut?: string
+        }
+        Update: {
+          annee?: number | null
+          assurance_expiration?: string | null
+          categorie?: string | null
+          couleur?: string | null
+          created_at?: string
+          date_acquisition?: string | null
+          date_deremisage?: string | null
+          date_disposition?: string | null
+          date_maj_km?: string | null
+          date_remisage?: string | null
+          demande_par?: string | null
+          entite?: string
+          id?: string
+          immatriculation_expiration?: string | null
+          km_achat?: number | null
+          km_actuel?: number | null
+          marque?: string | null
+          modele?: string | null
+          nb_essieux?: string | null
+          notes?: string | null
+          numero_serie?: string | null
+          numero_unite?: string
+          plaque?: string | null
+          pnvb?: string | null
+          poids?: string | null
+          prix_achat?: number | null
+          reservoir?: boolean | null
+          statut?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
