@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import { getInspections, TYPES_INSPECTION, RESULTATS } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import { getUnites } from "@/lib/unites.functions";
