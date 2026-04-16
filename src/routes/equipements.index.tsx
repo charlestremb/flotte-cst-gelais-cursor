@@ -19,6 +19,22 @@ function EquipementsPage() {
   const [categorie, setCategorie] = useState("all");
   const [statut, setStatut] = useState("all");
   const [showAdd, setShowAdd] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<Unite | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      await deleteUnite({ data: { id: confirmDelete.id } });
+      setConfirmDelete(null);
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la suppression : " + (e as Error).message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
