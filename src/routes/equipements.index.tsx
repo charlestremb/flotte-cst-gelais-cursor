@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
-import { Search } from "lucide-react";
+import { UniteFormModal } from "@/components/UniteFormModal";
+import { Search, Plus, Download } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/")({
@@ -12,10 +13,12 @@ export const Route = createFileRoute("/equipements/")({
 
 function EquipementsPage() {
   const unites = Route.useLoaderData() as Unite[];
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
   const [categorie, setCategorie] = useState("all");
   const [statut, setStatut] = useState("all");
+  const [showAdd, setShowAdd] = useState(false);
 
   const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
@@ -34,12 +37,53 @@ function EquipementsPage() {
     return true;
   });
 
+  const exportCSV = () => {
+    const headers = ["Unité", "Entité", "Catégorie", "Marque", "Modèle", "Année", "Plaque", "N° série", "Statut"];
+    const escape = (v: unknown) => {
+      const s = v == null ? "" : String(v);
+      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = filtered.map((u) =>
+      [u.numero_unite, u.entite, u.categorie, u.marque, u.modele, u.annee, u.plaque, u.numero_serie, u.statut]
+        .map(escape)
+        .join(";")
+    );
+    const csv = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `equipements-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold">Équipements</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {filtered.length} unité{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
-      </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Équipements</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filtered.length} unité{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={exportCSV}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Exporter CSV
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter une unité
+          </button>
+        </div>
+      </div>
 
       {/* Filtres */}
       <div className="mt-5 flex flex-wrap items-center gap-3">
