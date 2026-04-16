@@ -1,11 +1,23 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnite, updateUnite } from "@/lib/unites.functions";
+import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
+import { getInspectionsForUnite } from "@/lib/inspections.functions";
+import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
-import { ArrowLeft, Save } from "lucide-react";
+import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
+import { InspectionModal } from "@/components/InspectionModal";
+import { ArrowLeft, Save, Plus } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
-  loader: ({ params }) => getUnite({ data: { id: params.uniteId } }),
+  loader: async ({ params }) => {
+    const [unite, inspections, allUnites] = await Promise.all([
+      getUnite({ data: { id: params.uniteId } }),
+      getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
+      getUnites(),
+    ]);
+    return { unite, inspections, allUnites };
+  },
   component: UniteDetailPage,
   notFoundComponent: () => (
     <div className="text-center py-12">
@@ -72,13 +84,15 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const unite = Route.useLoaderData();
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
+  const { unite, inspections, allUnites } = data;
   const router = useRouter();
   const [notes, setNotes] = useState(unite.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
+  const [showInspectionModal, setShowInspectionModal] = useState(false);
 
   const handleSaveNotes = async () => {
     setSaving(true);
@@ -222,14 +236,66 @@ function UniteDetailPage() {
 
         {/* Section 5 - Inspections */}
         <Section title="Inspections">
-          <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
-          <button
-            disabled
-            className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-50"
-          >
-            + Ajouter une inspection
-          </button>
+          {(() => {
+            // Find next planned inspection
+            const upcoming = inspections
+              .filter((i) => i.prochaine_inspection)
+              .sort((a, b) => (a.prochaine_inspection! < b.prochaine_inspection! ? -1 : 1))[0];
+            const level = upcoming ? getInspectionAlertLevel(upcoming.prochaine_inspection) : "none";
+
+            return (
+              <>
+                {upcoming && (
+                  <div className="mb-4 rounded-lg border border-border bg-secondary/40 p-3">
+                    <p className="text-xs text-muted-foreground">Prochaine inspection</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {fmt(upcoming.prochaine_inspection)} — {upcoming.type_inspection}
+                      </span>
+                      <AlertDot level={level} />
+                    </div>
+                  </div>
+                )}
+
+                {inspections.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-border">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border bg-secondary/40 text-left">
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Date</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Résultat</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inspections.map((i) => (
+                          <tr key={i.id} className="border-b border-border last:border-0">
+                            <td className="px-3 py-2 text-muted-foreground">{fmt(i.date_inspection)}</td>
+                            <td className="px-3 py-2">{i.type_inspection}</td>
+                            <td className="px-3 py-2"><ResultatBadge resultat={i.resultat} /></td>
+                            <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{i.notes_inspection ?? "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowInspectionModal(true)}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Ajouter une inspection
+                </button>
+              </>
+            );
+          })()}
         </Section>
+
 
         {/* Section 6 - Notes */}
         <Section title="Notes">
@@ -306,6 +372,18 @@ function UniteDetailPage() {
           </div>
         </div>
       )}
+
+      <InspectionModal
+        open={showInspectionModal}
+        onClose={() => setShowInspectionModal(false)}
+        onCreated={() => {
+          setShowInspectionModal(false);
+          router.invalidate();
+        }}
+        unites={allUnites}
+        preselectedUniteId={unite.id}
+      />
     </div>
   );
 }
+
