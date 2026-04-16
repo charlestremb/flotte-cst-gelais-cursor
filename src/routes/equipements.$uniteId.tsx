@@ -265,9 +265,10 @@ function UniteDetailPage() {
         {/* Section 3 - Acquisition */}
         <Section title="Acquisition">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Date d'achat" value={fmt(unite.date_acquisition)} />
+            <Field label="Date d'acquisition" value={fmt(unite.date_acquisition)} />
+            <Field label="Date de disposition" value={fmt(unite.date_disposition)} />
             <Field label="Prix d'achat" value={fmtMoney(unite.prix_achat)} />
-            <Field label="Km à l'achat" value={unite.km_achat != null ? `${unite.km_achat.toLocaleString()} km` : "—"} />
+            <Field label="Km/h à l'achat" value={unite.km_achat != null ? `${unite.km_achat.toLocaleString()} km` : "—"} />
             <Field label="Km actuel" value={unite.km_actuel != null ? `${unite.km_actuel.toLocaleString()} km` : "—"} />
             <Field label="Date MAJ km" value={fmt(unite.date_maj_km)} />
           </div>
