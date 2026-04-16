@@ -200,11 +200,73 @@ function EquipementsPage() {
         </select>
       </div>
 
+      {/* Barre d'actions groupées */}
+      {selected.size > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
+          <span className="text-sm font-medium text-foreground">
+            {selected.size} unité{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <select
+              value={bulkStatut}
+              onChange={(e) => setBulkStatut(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Changer le statut…</option>
+              {STATUT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={applyBulkStatut}
+              disabled={!bulkStatut || bulkBusy}
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {bulkBusy ? "Application..." : "Appliquer"}
+            </button>
+            <button
+              onClick={() => setConfirmBulkDelete(true)}
+              disabled={bulkBusy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              title="Effacer la sélection"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tableau */}
       <div className="mt-5 overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/50 text-left">
+              <th className="px-4 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={filtered.length > 0 && filtered.every((u) => selected.has(u.id))}
+                  ref={(el) => {
+                    if (el) {
+                      const some = filtered.some((u) => selected.has(u.id));
+                      const all = filtered.length > 0 && filtered.every((u) => selected.has(u.id));
+                      el.indeterminate = some && !all;
+                    }
+                  }}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelected(new Set(filtered.map((u) => u.id)));
+                    else setSelected(new Set());
+                  }}
+                  className="h-4 w-4 cursor-pointer accent-primary"
+                  aria-label="Tout sélectionner"
+                />
+              </th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Unité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Entité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Catégorie</th>
