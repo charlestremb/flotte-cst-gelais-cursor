@@ -282,8 +282,19 @@ function EquipementsPage() {
             {filtered.map((u) => (
               <tr
                 key={u.id}
-                className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors"
+                className={`border-b border-border last:border-0 transition-colors ${
+                  selected.has(u.id) ? "bg-primary/5" : "hover:bg-secondary/30"
+                }`}
               >
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(u.id)}
+                    onChange={() => toggleOne(u.id)}
+                    className="h-4 w-4 cursor-pointer accent-primary"
+                    aria-label={`Sélectionner ${u.numero_unite}`}
+                  />
+                </td>
                 <td className="px-4 py-3">
                   <Link
                     to="/equipements/$uniteId"
@@ -318,7 +329,7 @@ function EquipementsPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune unité trouvée
                 </td>
               </tr>
