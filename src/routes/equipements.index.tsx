@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getUnites } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { Search } from "lucide-react";
 import { useState } from "react";
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/equipements/")({
 });
 
 function EquipementsPage() {
-  const unites = Route.useLoaderData();
+  const unites = Route.useLoaderData() as Unite[];
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
   const [categorie, setCategorie] = useState("all");

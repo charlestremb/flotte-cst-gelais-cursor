@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnites, updateUnite } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { useState } from "react";
 
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/remisage")({
 });
 
 function RemisagePage() {
-  const unites = Route.useLoaderData();
+  const unites = Route.useLoaderData() as Unite[];
   const router = useRouter();
   const [showModal, setShowModal] = useState<{ id: string; action: "remiser" | "deremiser" } | null>(null);
   const [modalDate, setModalDate] = useState("");

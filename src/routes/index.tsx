@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getUnites, type Unite } from "@/lib/unites.functions";
+import { getUnites } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
 import { Truck, ParkingSquare, AlertTriangle, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -53,7 +54,7 @@ function StatCard({
 }
 
 function DashboardPage() {
-  const unites = Route.useLoaderData();
+  const unites = Route.useLoaderData() as Unite[];
 
   const actifs = unites.filter((u) => u.statut === "actif");
   const remises = unites.filter((u) => u.statut === "remise");
