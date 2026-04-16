@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      inspections: {
+        Row: {
+          created_at: string
+          date_inspection: string | null
+          effectuee_par: string | null
+          id: string
+          notes_inspection: string | null
+          prochaine_inspection: string | null
+          resultat: string
+          type_inspection: string
+          unite_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_inspection?: string | null
+          effectuee_par?: string | null
+          id?: string
+          notes_inspection?: string | null
+          prochaine_inspection?: string | null
+          resultat?: string
+          type_inspection: string
+          unite_id: string
+        }
+        Update: {
+          created_at?: string
+          date_inspection?: string | null
+          effectuee_par?: string | null
+          id?: string
+          notes_inspection?: string | null
+          prochaine_inspection?: string | null
+          resultat?: string
+          type_inspection?: string
+          unite_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspections_unite_id_fkey"
+            columns: ["unite_id"]
+            isOneToOne: false
+            referencedRelation: "unites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unites: {
         Row: {
           annee: number | null
