@@ -159,6 +159,7 @@ function EquipementsPage() {
               <th className="px-4 py-3 font-medium text-muted-foreground">Couleur</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Plaque</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground w-12"></th>
             </tr>
           </thead>
           <tbody>
@@ -187,11 +188,21 @@ function EquipementsPage() {
                 <td className="px-4 py-3">
                   <StatutBadge statut={u.statut} />
                 </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => setConfirmDelete(u)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    title="Supprimer cette unité"
+                    aria-label="Supprimer cette unité"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune unité trouvée
                 </td>
               </tr>
@@ -208,6 +219,36 @@ function EquipementsPage() {
           router.invalidate();
         }}
       />
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Supprimer cette unité ?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Vous êtes sur le point de supprimer définitivement l'unité{" "}
+              <span className="font-semibold text-foreground">{confirmDelete.numero_unite}</span>
+              {confirmDelete.marque && <> ({confirmDelete.marque} {confirmDelete.modele})</>}.
+              Toutes les inspections liées seront aussi supprimées. Cette action est irréversible.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              >
+                {deleting ? "Suppression..." : "Supprimer définitivement"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
