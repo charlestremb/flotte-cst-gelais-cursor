@@ -6,7 +6,7 @@ import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
-import { ArrowLeft, Save, Plus } from "lucide-react";
+import { ArrowLeft, Save, Plus, Printer } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
@@ -129,14 +129,23 @@ function UniteDetailPage() {
     v != null ? v.toLocaleString("fr-CA", { style: "currency", currency: "CAD" }) : "—";
 
   return (
-    <div>
-      <Link
-        to="/equipements"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Retour aux équipements
-      </Link>
+    <div className="print-area">
+      <div className="no-print flex items-center justify-between mb-4">
+        <Link
+          to="/equipements"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour aux équipements
+        </Link>
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+        >
+          <Printer className="h-4 w-4" />
+          Imprimer la fiche
+        </button>
+      </div>
 
       <div className="flex items-center gap-4 mb-6">
         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/15 text-primary text-xl font-bold">

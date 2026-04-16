@@ -182,6 +182,15 @@ function EquipementsPage() {
           </tbody>
         </table>
       </div>
+
+      <UniteFormModal
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        onCreated={() => {
+          setShowAdd(false);
+          router.invalidate();
+        }}
+      />
     </div>
   );
 }
