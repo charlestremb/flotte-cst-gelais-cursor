@@ -373,18 +373,24 @@ function UniteDetailPage() {
                 ? "Remiser l'unité"
                 : showModal === "deremiser"
                   ? "Déremiser l'unité"
-                  : "Marquer comme vendu"}
+                  : showModal === "a_remiser"
+                    ? "Marquer à remiser"
+                    : showModal === "a_deremiser"
+                      ? "Marquer à déremiser"
+                      : "Marquer comme vendu"}
             </h3>
             <div className="space-y-3">
-              <div>
-                <label className="text-sm text-muted-foreground">Date</label>
-                <input
-                  type="date"
-                  value={modalDate}
-                  onChange={(e) => setModalDate(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
+              {showModal !== "a_remiser" && showModal !== "a_deremiser" && (
+                <div>
+                  <label className="text-sm text-muted-foreground">Date</label>
+                  <input
+                    type="date"
+                    value={modalDate}
+                    onChange={(e) => setModalDate(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              )}
               {showModal !== "vendu" && (
                 <div>
                   <label className="text-sm text-muted-foreground">Demandé par</label>
