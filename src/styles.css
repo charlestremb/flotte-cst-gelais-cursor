@@ -107,3 +107,35 @@
     font-family: var(--font-sans);
   }
 }
+
+@media print {
+  @page {
+    size: letter;
+    margin: 1.5cm;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area,
+  .print-area * {
+    color: black !important;
+    background: white !important;
+    border-color: #ccc !important;
+  }
+  .print-area .text-primary,
+  .print-area .text-muted-foreground {
+    color: #333 !important;
+  }
+  aside,
+  nav {
+    display: none !important;
+  }
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+}

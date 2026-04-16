@@ -4,6 +4,7 @@ import {
   Truck,
   ParkingSquare,
   ClipboardCheck,
+  Archive,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -14,6 +15,7 @@ const navItems = [
   { to: "/equipements", label: "Équipements", icon: Truck },
   { to: "/remisage", label: "Remisage", icon: ParkingSquare },
   { to: "/inspections", label: "Inspections", icon: ClipboardCheck },
+  { to: "/archives", label: "Archives", icon: Archive },
 ] as const;
 
 export function AppSidebar() {
@@ -22,7 +24,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border bg-sidebar transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}
+      className={`no-print fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border bg-sidebar transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
