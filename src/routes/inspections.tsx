@@ -117,6 +117,7 @@ function InspectionsPage() {
               <th className="px-4 py-3 font-medium text-muted-foreground">Date prévue</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Effectuée par</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">PDF</th>
             </tr>
           </thead>
           <tbody>
