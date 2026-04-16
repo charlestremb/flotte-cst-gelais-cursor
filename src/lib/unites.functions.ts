@@ -63,3 +63,11 @@ export const updateUnite = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const createUnite = createServerFn({ method: "POST" })
+  .inputValidator((data: Partial<Unite> & { numero_unite: string; entite: string }) => data)
+  .handler(async ({ data }) => {
+    const { error } = await supabase.from("unites").insert(data);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
