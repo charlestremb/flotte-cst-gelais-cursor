@@ -34,7 +34,7 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="overflow-hidden">
             <p className="text-sm font-semibold text-foreground truncate">
-              CST Gelais
+              Les Constructions St-Gelais
             </p>
             <p className="text-xs text-muted-foreground">Gestion de flotte</p>
           </div>
