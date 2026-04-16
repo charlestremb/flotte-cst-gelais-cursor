@@ -1,10 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnites, deleteUnite } from "@/lib/unites.functions";
+import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
-import { Search, Plus, Download, Trash2 } from "lucide-react";
+import { Search, Plus, Download, Trash2, X } from "lucide-react";
 import { useState } from "react";
+
+const STATUT_OPTIONS: { value: string; label: string }[] = [
+  { value: "actif", label: "Actif" },
+  { value: "remise", label: "Remisé" },
+  { value: "a_remiser", label: "À remiser" },
+  { value: "a_deremiser", label: "À déremiser" },
+  { value: "vendu", label: "Vendu" },
+];
 
 export const Route = createFileRoute("/equipements/")({
   loader: () => getUnites(),
@@ -21,6 +29,10 @@ function EquipementsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<Unite | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkStatut, setBulkStatut] = useState<string>("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
@@ -33,6 +45,48 @@ function EquipementsPage() {
       alert("Erreur lors de la suppression : " + (e as Error).message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const applyBulkStatut = async () => {
+    if (!bulkStatut || selected.size === 0) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          updateUnite({ data: { id, updates: { statut: bulkStatut } } })
+        )
+      );
+      setSelected(new Set());
+      setBulkStatut("");
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la mise à jour : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const applyBulkDelete = async () => {
+    setBulkBusy(true);
+    try {
+      await Promise.all(Array.from(selected).map((id) => deleteUnite({ data: { id } })));
+      setSelected(new Set());
+      setConfirmBulkDelete(false);
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la suppression : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
     }
   };
 
@@ -146,11 +200,73 @@ function EquipementsPage() {
         </select>
       </div>
 
+      {/* Barre d'actions groupées */}
+      {selected.size > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
+          <span className="text-sm font-medium text-foreground">
+            {selected.size} unité{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <select
+              value={bulkStatut}
+              onChange={(e) => setBulkStatut(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Changer le statut…</option>
+              {STATUT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={applyBulkStatut}
+              disabled={!bulkStatut || bulkBusy}
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {bulkBusy ? "Application..." : "Appliquer"}
+            </button>
+            <button
+              onClick={() => setConfirmBulkDelete(true)}
+              disabled={bulkBusy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              title="Effacer la sélection"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tableau */}
       <div className="mt-5 overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/50 text-left">
+              <th className="px-4 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={filtered.length > 0 && filtered.every((u) => selected.has(u.id))}
+                  ref={(el) => {
+                    if (el) {
+                      const some = filtered.some((u) => selected.has(u.id));
+                      const all = filtered.length > 0 && filtered.every((u) => selected.has(u.id));
+                      el.indeterminate = some && !all;
+                    }
+                  }}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelected(new Set(filtered.map((u) => u.id)));
+                    else setSelected(new Set());
+                  }}
+                  className="h-4 w-4 cursor-pointer accent-primary"
+                  aria-label="Tout sélectionner"
+                />
+              </th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Unité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Entité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Catégorie</th>
@@ -166,8 +282,19 @@ function EquipementsPage() {
             {filtered.map((u) => (
               <tr
                 key={u.id}
-                className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors"
+                className={`border-b border-border last:border-0 transition-colors ${
+                  selected.has(u.id) ? "bg-primary/5" : "hover:bg-secondary/30"
+                }`}
               >
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(u.id)}
+                    onChange={() => toggleOne(u.id)}
+                    className="h-4 w-4 cursor-pointer accent-primary"
+                    aria-label={`Sélectionner ${u.numero_unite}`}
+                  />
+                </td>
                 <td className="px-4 py-3">
                   <Link
                     to="/equipements/$uniteId"
@@ -202,7 +329,7 @@ function EquipementsPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune unité trouvée
                 </td>
               </tr>
@@ -244,6 +371,34 @@ function EquipementsPage() {
                 className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
               >
                 {deleting ? "Suppression..." : "Supprimer définitivement"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {confirmBulkDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Supprimer {selected.size} unité{selected.size > 1 ? "s" : ""} ?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Vous êtes sur le point de supprimer définitivement{" "}
+              <span className="font-semibold text-foreground">{selected.size}</span> unité{selected.size > 1 ? "s" : ""}.
+              Toutes les inspections liées seront aussi supprimées. Cette action est irréversible.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmBulkDelete(false)}
+                disabled={bulkBusy}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={applyBulkDelete}
+                disabled={bulkBusy}
+                className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              >
+                {bulkBusy ? "Suppression..." : "Supprimer définitivement"}
               </button>
             </div>
           </div>
