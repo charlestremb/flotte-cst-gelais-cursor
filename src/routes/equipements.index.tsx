@@ -1,10 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnites, deleteUnite } from "@/lib/unites.functions";
+import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
-import { Search, Plus, Download, Trash2 } from "lucide-react";
+import { Search, Plus, Download, Trash2, X } from "lucide-react";
 import { useState } from "react";
+
+const STATUT_OPTIONS: { value: string; label: string }[] = [
+  { value: "actif", label: "Actif" },
+  { value: "remise", label: "Remisé" },
+  { value: "a_remiser", label: "À remiser" },
+  { value: "a_deremiser", label: "À déremiser" },
+  { value: "vendu", label: "Vendu" },
+];
 
 export const Route = createFileRoute("/equipements/")({
   loader: () => getUnites(),
