@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           date_inspection: string | null
+          document_url: string | null
           effectuee_par: string | null
           id: string
           notes_inspection: string | null
@@ -29,6 +30,7 @@ export type Database = {
         Insert: {
           created_at?: string
           date_inspection?: string | null
+          document_url?: string | null
           effectuee_par?: string | null
           id?: string
           notes_inspection?: string | null
@@ -40,6 +42,7 @@ export type Database = {
         Update: {
           created_at?: string
           date_inspection?: string | null
+          document_url?: string | null
           effectuee_par?: string | null
           id?: string
           notes_inspection?: string | null
