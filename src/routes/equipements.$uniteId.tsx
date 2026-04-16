@@ -372,6 +372,18 @@ function UniteDetailPage() {
           </div>
         </div>
       )}
+
+      <InspectionModal
+        open={showInspectionModal}
+        onClose={() => setShowInspectionModal(false)}
+        onCreated={() => {
+          setShowInspectionModal(false);
+          router.invalidate();
+        }}
+        unites={allUnites}
+        preselectedUniteId={unite.id}
+      />
     </div>
   );
 }
+
