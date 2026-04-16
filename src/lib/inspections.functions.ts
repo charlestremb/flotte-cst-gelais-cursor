@@ -10,6 +10,7 @@ export type Inspection = {
   resultat: string;
   notes_inspection: string | null;
   prochaine_inspection: string | null;
+  document_url: string | null;
   created_at: string;
 };
 
