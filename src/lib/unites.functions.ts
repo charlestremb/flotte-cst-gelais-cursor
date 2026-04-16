@@ -71,3 +71,13 @@ export const createUnite = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const deleteUnite = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }) => {
+    // Supprimer les inspections liées d'abord (pas de FK cascade)
+    await supabase.from("inspections").delete().eq("unite_id", data.id);
+    const { error } = await supabase.from("unites").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
