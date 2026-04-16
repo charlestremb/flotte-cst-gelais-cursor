@@ -376,6 +376,34 @@ function EquipementsPage() {
           </div>
         </div>
       )}
+      {confirmBulkDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Supprimer {selected.size} unité{selected.size > 1 ? "s" : ""} ?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Vous êtes sur le point de supprimer définitivement{" "}
+              <span className="font-semibold text-foreground">{selected.size}</span> unité{selected.size > 1 ? "s" : ""}.
+              Toutes les inspections liées seront aussi supprimées. Cette action est irréversible.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmBulkDelete(false)}
+                disabled={bulkBusy}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={applyBulkDelete}
+                disabled={bulkBusy}
+                className="rounded-lg bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              >
+                {bulkBusy ? "Suppression..." : "Supprimer définitivement"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
