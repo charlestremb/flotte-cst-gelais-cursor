@@ -43,7 +43,7 @@ export const sendInspectionNotification = createServerFn({ method: "POST" })
           <tr><td style="padding: 6px 0; color: #6b7280;">Effectuée par</td><td style="padding: 6px 0;">${inspection.effectuee_par ?? "—"}</td></tr>
         </table>
         ${inspection.document_url ? `<p><a href="${inspection.document_url}" style="background:#f97316;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;display:inline-block;">📄 Voir le document PDF</a></p>` : ""}
-        <p style="color: #6b7280; font-size: 12px; margin-top: 24px;">Gestion de flotte — CST Gelais</p>
+        <p style="color: #6b7280; font-size: 12px; margin-top: 24px;">Gestion de flotte — Les Constructions St-Gelais</p>
       </div>
     `;
 
@@ -54,7 +54,7 @@ export const sendInspectionNotification = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Flotte CST Gelais <onboarding@resend.dev>",
+        from: "Flotte Les Constructions St-Gelais <onboarding@resend.dev>",
         to: DESTINATAIRES,
         subject,
         html,
