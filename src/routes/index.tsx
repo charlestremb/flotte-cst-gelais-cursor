@@ -168,7 +168,7 @@ function DashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Tableau de bord</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Vue d'ensemble de la flotte CST Gelais</p>
+      <p className="mt-1 text-sm text-muted-foreground">Vue d'ensemble de la flotte Les Constructions St-Gelais</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Unités actives" value={actifs.length} icon={Truck} subtitle={`sur ${unites.length} au total`} />
