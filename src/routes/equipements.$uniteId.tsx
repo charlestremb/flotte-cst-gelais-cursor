@@ -1,11 +1,23 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnite, updateUnite } from "@/lib/unites.functions";
+import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
+import { getInspectionsForUnite } from "@/lib/inspections.functions";
+import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
-import { ArrowLeft, Save } from "lucide-react";
+import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
+import { InspectionModal } from "@/components/InspectionModal";
+import { ArrowLeft, Save, Plus } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
-  loader: ({ params }) => getUnite({ data: { id: params.uniteId } }),
+  loader: async ({ params }) => {
+    const [unite, inspections, allUnites] = await Promise.all([
+      getUnite({ data: { id: params.uniteId } }),
+      getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
+      getUnites(),
+    ]);
+    return { unite, inspections, allUnites };
+  },
   component: UniteDetailPage,
   notFoundComponent: () => (
     <div className="text-center py-12">
