@@ -17,7 +17,7 @@ function EquipementsPage() {
   const [categorie, setCategorie] = useState("all");
   const [statut, setStatut] = useState("all");
 
-  const categories = [...new Set(unites.map((u) => u.categorie).filter(Boolean))].sort();
+  const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
   const filtered = unites.filter((u) => {
     if (entite !== "all" && u.entite !== entite) return false;
