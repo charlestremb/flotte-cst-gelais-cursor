@@ -1,0 +1,215 @@
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { getUnites, updateUnite } from "@/lib/unites.functions";
+import type { Unite } from "@/lib/unites.functions";
+import { StatutBadge } from "@/components/StatutBadge";
+import { useState } from "react";
+
+export const Route = createFileRoute("/remisage")({
+  loader: () => getUnites(),
+  component: RemisagePage,
+});
+
+function RemisagePage() {
+  const unites = Route.useLoaderData() as Unite[];
+  const router = useRouter();
+  const [showModal, setShowModal] = useState<{ id: string; action: "remiser" | "deremiser" } | null>(null);
+  const [modalDate, setModalDate] = useState("");
+  const [modalDemandePar, setModalDemandePar] = useState("");
+
+  const aRemiser = unites.filter((u) => u.statut === "a_remiser");
+  const aDeremiser = unites.filter((u) => u.statut === "a_deremiser");
+  const remises = unites.filter((u) => u.statut === "remise");
+
+  const handleAction = async () => {
+    if (!showModal) return;
+    const updates: Record<string, unknown> =
+      showModal.action === "remiser"
+        ? {
+            statut: "remise",
+            date_remisage: modalDate || new Date().toISOString().split("T")[0],
+            demande_par: modalDemandePar,
+          }
+        : {
+            statut: "actif",
+            date_deremisage: modalDate || new Date().toISOString().split("T")[0],
+            demande_par: modalDemandePar,
+          };
+
+    await updateUnite({ data: { id: showModal.id, updates } });
+    setShowModal(null);
+    setModalDate("");
+    setModalDemandePar("");
+    router.invalidate();
+  };
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold">Remisage</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Gestion des unités à remiser et déremiser
+      </p>
+
+      {/* À remiser */}
+      {aRemiser.length > 0 && (
+        <div className="mt-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            À remiser
+            <span className="rounded-full bg-warning/15 border border-warning/30 px-2 py-0.5 text-xs font-medium text-warning">
+              {aRemiser.length}
+            </span>
+          </h2>
+          <div className="mt-3 space-y-2">
+            {aRemiser.map((u) => (
+              <div
+                key={u.id}
+                className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-primary">{u.numero_unite}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {u.marque} {u.modele} · {u.entite}
+                  </span>
+                  <StatutBadge statut={u.statut} />
+                </div>
+                <button
+                  onClick={() => setShowModal({ id: u.id, action: "remiser" })}
+                  className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
+                >
+                  Remiser
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* À déremiser */}
+      {aDeremiser.length > 0 && (
+        <div className="mt-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            À déremiser
+            <span className="rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-xs font-medium text-primary">
+              {aDeremiser.length}
+            </span>
+          </h2>
+          <div className="mt-3 space-y-2">
+            {aDeremiser.map((u) => (
+              <div
+                key={u.id}
+                className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-primary">{u.numero_unite}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {u.marque} {u.modele} · {u.entite}
+                  </span>
+                  <StatutBadge statut={u.statut} />
+                </div>
+                <button
+                  onClick={() => setShowModal({ id: u.id, action: "deremiser" })}
+                  className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+                >
+                  Déremiser
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Remisées */}
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold">
+          Unités remisées ({remises.length})
+        </h2>
+        <div className="mt-3 space-y-2">
+          {remises.map((u) => (
+            <div
+              key={u.id}
+              className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
+            >
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/equipements/$uniteId"
+                  params={{ uniteId: u.id }}
+                  className="font-semibold text-primary hover:underline"
+                >
+                  {u.numero_unite}
+                </Link>
+                <span className="text-sm text-muted-foreground">
+                  {u.marque} {u.modele} · {u.entite}
+                </span>
+                <StatutBadge statut={u.statut} />
+              </div>
+              <button
+                onClick={() => setShowModal({ id: u.id, action: "deremiser" })}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Déremiser
+              </button>
+            </div>
+          ))}
+          {remises.length === 0 && (
+            <p className="text-sm text-muted-foreground py-4">Aucune unité remisée</p>
+          )}
+        </div>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
+            <h3 className="text-lg font-semibold mb-4">
+              {showModal.action === "remiser" ? "Remiser l'unité" : "Déremiser l'unité"}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm text-muted-foreground">Date</label>
+                <input
+                  type="date"
+                  value={modalDate}
+                  onChange={(e) => setModalDate(e.target.value)}
+                  className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Demandé par</label>
+                <input
+                  type="text"
+                  value={modalDemandePar}
+                  onChange={(e) => setModalDemandePar(e.target.value)}
+                  className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder="Nom de la personne"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowModal(null);
+                  setModalDate("");
+                  setModalDemandePar("");
+                }}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleAction}
+                className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {aRemiser.length === 0 && aDeremiser.length === 0 && (
+        <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
+          <p className="text-muted-foreground">Aucune action de remisage en attente</p>
+        </div>
+      )}
+    </div>
+  );
+}
