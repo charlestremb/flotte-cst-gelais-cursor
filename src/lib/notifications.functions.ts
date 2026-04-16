@@ -54,7 +54,7 @@ export const sendInspectionNotification = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Flotte CST Gelais <onboarding@resend.dev>",
+        from: "Flotte Les Constructions St-Gelais <onboarding@resend.dev>",
         to: DESTINATAIRES,
         subject,
         html,
