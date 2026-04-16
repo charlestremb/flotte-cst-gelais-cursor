@@ -98,7 +98,6 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
             <label className="text-xs text-muted-foreground">Entité *</label>
             <select value={form.entite} onChange={(e) => update("entite", e.target.value)} className={inputCls}>
               <option value="CSTG">CSTG</option>
-              <option value="T1C">T1C</option>
               <option value="9487-6216">9487-6216</option>
             </select>
           </div>
