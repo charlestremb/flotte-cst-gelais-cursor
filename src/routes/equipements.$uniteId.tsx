@@ -84,13 +84,15 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const unite = Route.useLoaderData();
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
+  const { unite, inspections, allUnites } = data;
   const router = useRouter();
   const [notes, setNotes] = useState(unite.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
+  const [showInspectionModal, setShowInspectionModal] = useState(false);
 
   const handleSaveNotes = async () => {
     setSaving(true);
