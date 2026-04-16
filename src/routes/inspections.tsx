@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import { getInspections, TYPES_INSPECTION, RESULTATS } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import { getUnites } from "@/lib/unites.functions";
@@ -117,6 +117,7 @@ function InspectionsPage() {
               <th className="px-4 py-3 font-medium text-muted-foreground">Date prévue</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Effectuée par</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">PDF</th>
             </tr>
           </thead>
           <tbody>
@@ -151,12 +152,19 @@ function InspectionsPage() {
                   <td className="px-4 py-3">
                     <ResultatBadge resultat={i.resultat} />
                   </td>
+                  <td className="px-4 py-3">
+                    {i.document_url ? (
+                      <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline text-xs">
+                        <FileText className="h-3.5 w-3.5" /> Voir
+                      </a>
+                    ) : <span className="text-muted-foreground text-xs">—</span>}
+                  </td>
                 </tr>
               );
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune inspection trouvée
                 </td>
               </tr>

@@ -10,6 +10,7 @@ export type Inspection = {
   resultat: string;
   notes_inspection: string | null;
   prochaine_inspection: string | null;
+  document_url: string | null;
   created_at: string;
 };
 
@@ -68,11 +69,25 @@ export const createInspection = createServerFn({ method: "POST" })
       resultat?: string;
       notes_inspection?: string | null;
       prochaine_inspection?: string | null;
+      document_url?: string | null;
     }) => data
   )
   .handler(async ({ data }) => {
-    const { error } = await supabase.from("inspections").insert(data);
+    const { data: inserted, error } = await supabase
+      .from("inspections")
+      .insert(data)
+      .select("*, unite:unites(numero_unite, marque, modele, entite)")
+      .single();
     if (error) throw new Error(error.message);
+
+    // Notifier le garage par courriel (best-effort, n'arrête pas l'enregistrement)
+    try {
+      const { sendInspectionNotification } = await import("./notifications.functions");
+      await sendInspectionNotification({ data: { inspection: inserted as any } });
+    } catch (e) {
+      console.error("Échec envoi courriel notification:", e);
+    }
+
     return { success: true };
   });
 

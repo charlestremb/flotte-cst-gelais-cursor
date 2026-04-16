@@ -6,7 +6,7 @@ import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
-import { ArrowLeft, Save, Plus, Printer } from "lucide-react";
+import { ArrowLeft, Save, Plus, Printer, FileText } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
@@ -315,6 +315,7 @@ function UniteDetailPage() {
                           <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
                           <th className="px-3 py-2 font-medium text-muted-foreground">Résultat</th>
                           <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">PDF</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -324,6 +325,13 @@ function UniteDetailPage() {
                             <td className="px-3 py-2">{i.type_inspection}</td>
                             <td className="px-3 py-2"><ResultatBadge resultat={i.resultat} /></td>
                             <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{i.notes_inspection ?? "—"}</td>
+                            <td className="px-3 py-2">
+                              {i.document_url ? (
+                                <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                                  <FileText className="h-3.5 w-3.5" /> Voir
+                                </a>
+                              ) : <span className="text-muted-foreground">—</span>}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
