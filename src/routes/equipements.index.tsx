@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnites } from "@/lib/unites.functions";
+import { getUnites, deleteUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
-import { Search, Plus, Download } from "lucide-react";
+import { Search, Plus, Download, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/")({
