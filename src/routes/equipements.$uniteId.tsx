@@ -236,14 +236,66 @@ function UniteDetailPage() {
 
         {/* Section 5 - Inspections */}
         <Section title="Inspections">
-          <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
-          <button
-            disabled
-            className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-50"
-          >
-            + Ajouter une inspection
-          </button>
+          {(() => {
+            // Find next planned inspection
+            const upcoming = inspections
+              .filter((i) => i.prochaine_inspection)
+              .sort((a, b) => (a.prochaine_inspection! < b.prochaine_inspection! ? -1 : 1))[0];
+            const level = upcoming ? getInspectionAlertLevel(upcoming.prochaine_inspection) : "none";
+
+            return (
+              <>
+                {upcoming && (
+                  <div className="mb-4 rounded-lg border border-border bg-secondary/40 p-3">
+                    <p className="text-xs text-muted-foreground">Prochaine inspection</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {fmt(upcoming.prochaine_inspection)} — {upcoming.type_inspection}
+                      </span>
+                      <AlertDot level={level} />
+                    </div>
+                  </div>
+                )}
+
+                {inspections.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-border">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border bg-secondary/40 text-left">
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Date</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Résultat</th>
+                          <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inspections.map((i) => (
+                          <tr key={i.id} className="border-b border-border last:border-0">
+                            <td className="px-3 py-2 text-muted-foreground">{fmt(i.date_inspection)}</td>
+                            <td className="px-3 py-2">{i.type_inspection}</td>
+                            <td className="px-3 py-2"><ResultatBadge resultat={i.resultat} /></td>
+                            <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{i.notes_inspection ?? "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowInspectionModal(true)}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Ajouter une inspection
+                </button>
+              </>
+            );
+          })()}
         </Section>
+
 
         {/* Section 6 - Notes */}
         <Section title="Notes">
