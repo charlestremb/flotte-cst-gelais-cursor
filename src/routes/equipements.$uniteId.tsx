@@ -89,7 +89,7 @@ function UniteDetailPage() {
   const router = useRouter();
   const [notes, setNotes] = useState(unite.notes ?? "");
   const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | null>(null);
+  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
@@ -115,6 +115,12 @@ function UniteDetailPage() {
     } else if (showModal === "vendu") {
       updates.statut = "vendu";
       updates.date_disposition = modalDate || new Date().toISOString().split("T")[0];
+    } else if (showModal === "a_remiser") {
+      updates.statut = "a_remiser";
+      updates.demande_par = modalDemandePar;
+    } else if (showModal === "a_deremiser") {
+      updates.statut = "a_deremiser";
+      updates.demande_par = modalDemandePar;
     }
 
     await updateUnite({ data: { id: unite.id, updates } });
@@ -124,9 +130,9 @@ function UniteDetailPage() {
     router.invalidate();
   };
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-CA") : "—");
+  const fmt = (d: string | null) => (d ? d.slice(0, 10) : "—");
   const fmtMoney = (v: number | null) =>
-    v != null ? v.toLocaleString("fr-CA", { style: "currency", currency: "CAD" }) : "—";
+    v != null ? `${v.toLocaleString("fr-CA")} $` : "—";
 
   return (
     <div className="print-area">
