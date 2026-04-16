@@ -89,7 +89,7 @@ function UniteDetailPage() {
   const router = useRouter();
   const [notes, setNotes] = useState(unite.notes ?? "");
   const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | null>(null);
+  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
@@ -115,6 +115,12 @@ function UniteDetailPage() {
     } else if (showModal === "vendu") {
       updates.statut = "vendu";
       updates.date_disposition = modalDate || new Date().toISOString().split("T")[0];
+    } else if (showModal === "a_remiser") {
+      updates.statut = "a_remiser";
+      updates.demande_par = modalDemandePar;
+    } else if (showModal === "a_deremiser") {
+      updates.statut = "a_deremiser";
+      updates.demande_par = modalDemandePar;
     }
 
     await updateUnite({ data: { id: unite.id, updates } });
@@ -124,9 +130,9 @@ function UniteDetailPage() {
     router.invalidate();
   };
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-CA") : "—");
+  const fmt = (d: string | null) => (d ? d.slice(0, 10) : "—");
   const fmtMoney = (v: number | null) =>
-    v != null ? v.toLocaleString("fr-CA", { style: "currency", currency: "CAD" }) : "—";
+    v != null ? `${v.toLocaleString("fr-CA")} $` : "—";
 
   return (
     <div className="print-area">
@@ -198,19 +204,51 @@ function UniteDetailPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {unite.statut === "actif" && (
+              <>
+                <button
+                  onClick={() => setShowModal("a_remiser")}
+                  className="rounded-lg bg-warning/15 border border-warning/30 px-3 py-1.5 text-sm font-medium text-warning hover:bg-warning/25 transition-colors"
+                >
+                  Marquer à remiser
+                </button>
+                <button
+                  onClick={() => setShowModal("remiser")}
+                  className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
+                >
+                  Remiser
+                </button>
+              </>
+            )}
+            {unite.statut === "a_remiser" && (
               <button
                 onClick={() => setShowModal("remiser")}
                 className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
               >
-                Remiser
+                Confirmer le remisage
               </button>
             )}
             {unite.statut === "remise" && (
+              <>
+                <button
+                  onClick={() => setShowModal("a_deremiser")}
+                  className="rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+                >
+                  Marquer à déremiser
+                </button>
+                <button
+                  onClick={() => setShowModal("deremiser")}
+                  className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+                >
+                  Déremiser
+                </button>
+              </>
+            )}
+            {unite.statut === "a_deremiser" && (
               <button
                 onClick={() => setShowModal("deremiser")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
-                Déremiser
+                Confirmer le déremisage
               </button>
             )}
             {unite.statut !== "vendu" && (
@@ -335,18 +373,24 @@ function UniteDetailPage() {
                 ? "Remiser l'unité"
                 : showModal === "deremiser"
                   ? "Déremiser l'unité"
-                  : "Marquer comme vendu"}
+                  : showModal === "a_remiser"
+                    ? "Marquer à remiser"
+                    : showModal === "a_deremiser"
+                      ? "Marquer à déremiser"
+                      : "Marquer comme vendu"}
             </h3>
             <div className="space-y-3">
-              <div>
-                <label className="text-sm text-muted-foreground">Date</label>
-                <input
-                  type="date"
-                  value={modalDate}
-                  onChange={(e) => setModalDate(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
+              {showModal !== "a_remiser" && showModal !== "a_deremiser" && (
+                <div>
+                  <label className="text-sm text-muted-foreground">Date</label>
+                  <input
+                    type="date"
+                    value={modalDate}
+                    onChange={(e) => setModalDate(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              )}
               {showModal !== "vendu" && (
                 <div>
                   <label className="text-sm text-muted-foreground">Demandé par</label>

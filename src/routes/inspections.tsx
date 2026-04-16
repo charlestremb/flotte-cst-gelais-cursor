@@ -42,7 +42,7 @@ function InspectionsPage() {
     return true;
   });
 
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-CA") : "—");
+  const fmt = (d: string | null) => (d ? d.slice(0, 10) : "—");
 
   return (
     <div>
@@ -81,7 +81,6 @@ function InspectionsPage() {
         >
           <option value="all">Toutes les entités</option>
           <option value="CSTG">CSTG</option>
-          <option value="T1C">T1C</option>
           <option value="9487-6216">9487-6216</option>
         </select>
         <select

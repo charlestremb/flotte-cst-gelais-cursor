@@ -104,7 +104,6 @@ function EquipementsPage() {
         >
           <option value="all">Toutes les entités</option>
           <option value="CSTG">CSTG</option>
-          <option value="T1C">T1C</option>
           <option value="9487-6216">9487-6216</option>
         </select>
         <select
@@ -141,6 +140,7 @@ function EquipementsPage() {
               <th className="px-4 py-3 font-medium text-muted-foreground">Catégorie</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Marque / Modèle</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Année</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">Couleur</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Plaque</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
             </tr>
@@ -166,6 +166,7 @@ function EquipementsPage() {
                   {u.marque} {u.modele}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{u.annee}</td>
+                <td className="px-4 py-3 text-muted-foreground">{u.couleur ?? "—"}</td>
                 <td className="px-4 py-3 font-mono text-xs">{u.plaque}</td>
                 <td className="px-4 py-3">
                   <StatutBadge statut={u.statut} />
@@ -174,7 +175,7 @@ function EquipementsPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune unité trouvée
                 </td>
               </tr>
