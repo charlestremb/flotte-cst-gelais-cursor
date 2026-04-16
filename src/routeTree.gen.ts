@@ -9,38 +9,124 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RemisageRouteImport } from './routes/remisage'
+import { Route as InspectionsRouteImport } from './routes/inspections'
+import { Route as EquipementsRouteImport } from './routes/equipements'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EquipementsIndexRouteImport } from './routes/equipements.index'
+import { Route as EquipementsUniteIdRouteImport } from './routes/equipements.$uniteId'
 
+const RemisageRoute = RemisageRouteImport.update({
+  id: '/remisage',
+  path: '/remisage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsRoute = InspectionsRouteImport.update({
+  id: '/inspections',
+  path: '/inspections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipementsRoute = EquipementsRouteImport.update({
+  id: '/equipements',
+  path: '/equipements',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EquipementsIndexRoute = EquipementsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EquipementsRoute,
+} as any)
+const EquipementsUniteIdRoute = EquipementsUniteIdRouteImport.update({
+  id: '/$uniteId',
+  path: '/$uniteId',
+  getParentRoute: () => EquipementsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/equipements': typeof EquipementsRouteWithChildren
+  '/inspections': typeof InspectionsRoute
+  '/remisage': typeof RemisageRoute
+  '/equipements/$uniteId': typeof EquipementsUniteIdRoute
+  '/equipements/': typeof EquipementsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/inspections': typeof InspectionsRoute
+  '/remisage': typeof RemisageRoute
+  '/equipements/$uniteId': typeof EquipementsUniteIdRoute
+  '/equipements': typeof EquipementsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/equipements': typeof EquipementsRouteWithChildren
+  '/inspections': typeof InspectionsRoute
+  '/remisage': typeof RemisageRoute
+  '/equipements/$uniteId': typeof EquipementsUniteIdRoute
+  '/equipements/': typeof EquipementsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/equipements'
+    | '/inspections'
+    | '/remisage'
+    | '/equipements/$uniteId'
+    | '/equipements/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/inspections'
+    | '/remisage'
+    | '/equipements/$uniteId'
+    | '/equipements'
+  id:
+    | '__root__'
+    | '/'
+    | '/equipements'
+    | '/inspections'
+    | '/remisage'
+    | '/equipements/$uniteId'
+    | '/equipements/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EquipementsRoute: typeof EquipementsRouteWithChildren
+  InspectionsRoute: typeof InspectionsRoute
+  RemisageRoute: typeof RemisageRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/remisage': {
+      id: '/remisage'
+      path: '/remisage'
+      fullPath: '/remisage'
+      preLoaderRoute: typeof RemisageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections': {
+      id: '/inspections'
+      path: '/inspections'
+      fullPath: '/inspections'
+      preLoaderRoute: typeof InspectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipements': {
+      id: '/equipements'
+      path: '/equipements'
+      fullPath: '/equipements'
+      preLoaderRoute: typeof EquipementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +134,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/equipements/': {
+      id: '/equipements/'
+      path: '/'
+      fullPath: '/equipements/'
+      preLoaderRoute: typeof EquipementsIndexRouteImport
+      parentRoute: typeof EquipementsRoute
+    }
+    '/equipements/$uniteId': {
+      id: '/equipements/$uniteId'
+      path: '/$uniteId'
+      fullPath: '/equipements/$uniteId'
+      preLoaderRoute: typeof EquipementsUniteIdRouteImport
+      parentRoute: typeof EquipementsRoute
+    }
   }
 }
 
+interface EquipementsRouteChildren {
+  EquipementsUniteIdRoute: typeof EquipementsUniteIdRoute
+  EquipementsIndexRoute: typeof EquipementsIndexRoute
+}
+
+const EquipementsRouteChildren: EquipementsRouteChildren = {
+  EquipementsUniteIdRoute: EquipementsUniteIdRoute,
+  EquipementsIndexRoute: EquipementsIndexRoute,
+}
+
+const EquipementsRouteWithChildren = EquipementsRoute._addFileChildren(
+  EquipementsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EquipementsRoute: EquipementsRouteWithChildren,
+  InspectionsRoute: InspectionsRoute,
+  RemisageRoute: RemisageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
