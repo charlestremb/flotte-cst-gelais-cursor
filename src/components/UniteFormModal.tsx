@@ -27,6 +27,7 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
     pnvb: "",
     nb_essieux: "",
     date_acquisition: "",
+    date_disposition: "",
     prix_achat: "",
     km_achat: "",
     notes: "",
