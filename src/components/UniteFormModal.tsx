@@ -62,6 +62,7 @@ export function UniteFormModal({ open, onClose, onCreated }: Props) {
           pnvb: form.pnvb || null,
           nb_essieux: form.nb_essieux || null,
           date_acquisition: form.date_acquisition || null,
+          date_disposition: form.date_disposition || null,
           prix_achat: form.prix_achat ? parseFloat(form.prix_achat) : null,
           km_achat: form.km_achat ? parseInt(form.km_achat, 10) : null,
           notes: form.notes || null,
