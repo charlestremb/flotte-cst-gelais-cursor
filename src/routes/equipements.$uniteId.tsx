@@ -204,19 +204,51 @@ function UniteDetailPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {unite.statut === "actif" && (
+              <>
+                <button
+                  onClick={() => setShowModal("a_remiser")}
+                  className="rounded-lg bg-warning/15 border border-warning/30 px-3 py-1.5 text-sm font-medium text-warning hover:bg-warning/25 transition-colors"
+                >
+                  Marquer à remiser
+                </button>
+                <button
+                  onClick={() => setShowModal("remiser")}
+                  className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
+                >
+                  Remiser
+                </button>
+              </>
+            )}
+            {unite.statut === "a_remiser" && (
               <button
                 onClick={() => setShowModal("remiser")}
                 className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
               >
-                Remiser
+                Confirmer le remisage
               </button>
             )}
             {unite.statut === "remise" && (
+              <>
+                <button
+                  onClick={() => setShowModal("a_deremiser")}
+                  className="rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+                >
+                  Marquer à déremiser
+                </button>
+                <button
+                  onClick={() => setShowModal("deremiser")}
+                  className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+                >
+                  Déremiser
+                </button>
+              </>
+            )}
+            {unite.statut === "a_deremiser" && (
               <button
                 onClick={() => setShowModal("deremiser")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
-                Déremiser
+                Confirmer le déremisage
               </button>
             )}
             {unite.statut !== "vendu" && (
