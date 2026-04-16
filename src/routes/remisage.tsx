@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { getUnites, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
-import { StatutBadge } from "@/components/StatutBadge";
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/remisage")({
@@ -12,13 +12,12 @@ export const Route = createFileRoute("/remisage")({
 function RemisagePage() {
   const unites = Route.useLoaderData() as Unite[];
   const router = useRouter();
-  const [showModal, setShowModal] = useState<{ id: string; action: "remiser" | "deremiser" } | null>(null);
+  const [showModal, setShowModal] = useState<{ id: string; action: "remiser" | "deremiser"; numero: string } | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
 
   const aRemiser = unites.filter((u) => u.statut === "a_remiser");
   const aDeremiser = unites.filter((u) => u.statut === "a_deremiser");
-  const remises = unites.filter((u) => u.statut === "remise");
 
   const handleAction = async () => {
     if (!showModal) return;
@@ -42,6 +41,44 @@ function RemisagePage() {
     router.invalidate();
   };
 
+  const renderRow = (u: Unite, action: "remiser" | "deremiser") => (
+    <div
+      key={u.id}
+      className="rounded-xl border border-border bg-card p-4"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-primary">{u.numero_unite}</span>
+            <span className="text-xs text-muted-foreground">{u.entite}</span>
+          </div>
+          <p className="mt-0.5 text-sm truncate">{u.marque} {u.modele}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground font-mono">{u.plaque ?? "—"}</p>
+          {u.demande_par && (
+            <p className="mt-1 text-xs text-muted-foreground">Demandé par : <span className="text-foreground">{u.demande_par}</span></p>
+          )}
+        </div>
+        <button
+          onClick={() => setShowModal({ id: u.id, action, numero: u.numero_unite })}
+          className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+            action === "remiser"
+              ? "bg-destructive/15 border border-destructive/30 text-destructive hover:bg-destructive/25"
+              : "bg-success/15 border border-success/30 text-success hover:bg-success/25"
+          }`}
+        >
+          {action === "remiser" ? "Confirmer le remisage" : "Confirmer le déremisage"}
+        </button>
+      </div>
+    </div>
+  );
+
+  const emptyState = (
+    <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-success">
+      <CheckCircle2 className="h-4 w-4" />
+      Aucune unité en attente
+    </div>
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Remisage</h1>
@@ -49,9 +86,9 @@ function RemisagePage() {
         Gestion des unités à remiser et déremiser
       </p>
 
-      {/* À remiser */}
-      {aRemiser.length > 0 && (
-        <div className="mt-6">
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        {/* À remiser */}
+        <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             À remiser
             <span className="rounded-full bg-warning/15 border border-warning/30 px-2 py-0.5 text-xs font-medium text-warning">
@@ -59,33 +96,12 @@ function RemisagePage() {
             </span>
           </h2>
           <div className="mt-3 space-y-2">
-            {aRemiser.map((u) => (
-              <div
-                key={u.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-primary">{u.numero_unite}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {u.marque} {u.modele} · {u.entite}
-                  </span>
-                  <StatutBadge statut={u.statut} />
-                </div>
-                <button
-                  onClick={() => setShowModal({ id: u.id, action: "remiser" })}
-                  className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
-                >
-                  Remiser
-                </button>
-              </div>
-            ))}
+            {aRemiser.length > 0 ? aRemiser.map((u) => renderRow(u, "remiser")) : emptyState}
           </div>
         </div>
-      )}
 
-      {/* À déremiser */}
-      {aDeremiser.length > 0 && (
-        <div className="mt-6">
+        {/* À déremiser */}
+        <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             À déremiser
             <span className="rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-xs font-medium text-primary">
@@ -93,75 +109,19 @@ function RemisagePage() {
             </span>
           </h2>
           <div className="mt-3 space-y-2">
-            {aDeremiser.map((u) => (
-              <div
-                key={u.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-primary">{u.numero_unite}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {u.marque} {u.modele} · {u.entite}
-                  </span>
-                  <StatutBadge statut={u.statut} />
-                </div>
-                <button
-                  onClick={() => setShowModal({ id: u.id, action: "deremiser" })}
-                  className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
-                >
-                  Déremiser
-                </button>
-              </div>
-            ))}
+            {aDeremiser.length > 0 ? aDeremiser.map((u) => renderRow(u, "deremiser")) : emptyState}
           </div>
-        </div>
-      )}
-
-      {/* Remisées */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold">
-          Unités remisées ({remises.length})
-        </h2>
-        <div className="mt-3 space-y-2">
-          {remises.map((u) => (
-            <div
-              key={u.id}
-              className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
-            >
-              <div className="flex items-center gap-3">
-                <Link
-                  to="/equipements/$uniteId"
-                  params={{ uniteId: u.id }}
-                  className="font-semibold text-primary hover:underline"
-                >
-                  {u.numero_unite}
-                </Link>
-                <span className="text-sm text-muted-foreground">
-                  {u.marque} {u.modele} · {u.entite}
-                </span>
-                <StatutBadge statut={u.statut} />
-              </div>
-              <button
-                onClick={() => setShowModal({ id: u.id, action: "deremiser" })}
-                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
-              >
-                Déremiser
-              </button>
-            </div>
-          ))}
-          {remises.length === 0 && (
-            <p className="text-sm text-muted-foreground py-4">Aucune unité remisée</p>
-          )}
         </div>
       </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">
-              {showModal.action === "remiser" ? "Remiser l'unité" : "Déremiser l'unité"}
+            <h3 className="text-lg font-semibold mb-1">
+              {showModal.action === "remiser" ? "Confirmer le remisage" : "Confirmer le déremisage"}
             </h3>
+            <p className="text-sm text-muted-foreground mb-4">Unité {showModal.numero}</p>
             <div className="space-y-3">
               <div>
                 <label className="text-sm text-muted-foreground">Date</label>
@@ -202,12 +162,6 @@ function RemisagePage() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {aRemiser.length === 0 && aDeremiser.length === 0 && (
-        <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-muted-foreground">Aucune action de remisage en attente</p>
         </div>
       )}
     </div>
