@@ -29,8 +29,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CST Gelais — Gestion de flotte" },
-      { name: "description", content: "Application de gestion de flotte d'équipements de construction — CST Gelais" },
+      { title: "Les Constructions St-Gelais — Gestion de flotte" },
+      { name: "description", content: "Application de gestion de flotte d'équipements de construction — Les Constructions St-Gelais" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
