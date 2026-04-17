@@ -285,8 +285,8 @@ function EquipementsPage() {
       {/* Tableau */}
       <div className="mt-5 rounded-xl border border-border">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-secondary/50 text-left">
+          <thead className="sticky top-36 z-20">
+            <tr className="border-b border-border bg-secondary text-left shadow-sm">
               <th className="px-4 py-3 w-10">
                 <input
                   type="checkbox"
