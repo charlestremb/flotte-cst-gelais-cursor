@@ -94,6 +94,7 @@ function UniteDetailPage() {
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleSaveNotes = async () => {
     setSaving(true);
