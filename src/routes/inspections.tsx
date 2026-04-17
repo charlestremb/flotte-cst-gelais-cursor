@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Search, FileText, CalendarPlus, CheckCircle2 } from "lucide-react";
-import { getInspections, TYPES_INSPECTION } from "@/lib/inspections.functions";
+import { Plus, Search, FileText, CalendarPlus, CheckCircle2, Trash2 } from "lucide-react";
+import { getInspections, TYPES_INSPECTION, deleteInspection } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
