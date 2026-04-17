@@ -1,0 +1,1 @@
+ALTER TABLE public.unites ADD COLUMN IF NOT EXISTS utilisateur text;
