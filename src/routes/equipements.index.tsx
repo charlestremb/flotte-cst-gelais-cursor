@@ -320,7 +320,7 @@ function EquipementsPage() {
             {(() => {
               const isUnfiltered =
                 !search && entite === "all" && categorie === "all" && statut === "all";
-              const rows: React.ReactNode[] = [];
+              const rows: ReactNode[] = [];
               let lastCat: string | null | undefined = undefined;
               const sorted = isUnfiltered
                 ? [...filtered].sort((a, b) => {
