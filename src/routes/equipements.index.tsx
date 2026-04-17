@@ -8,6 +8,8 @@ import { useState, type ReactNode } from "react";
 
 const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
+  { value: "brise", label: "Brisé" },
+  { value: "hors_usage", label: "Hors d'usage" },
   { value: "remise", label: "Remisé" },
   { value: "a_remiser", label: "À remiser" },
   { value: "a_deremiser", label: "À déremiser" },
@@ -214,6 +216,8 @@ function EquipementsPage() {
           >
             <option value="all">Tous les statuts</option>
             <option value="actif">Actif</option>
+            <option value="brise">Brisé</option>
+            <option value="hors_usage">Hors d'usage</option>
             <option value="remise">Remisé</option>
             <option value="a_remiser">À remiser</option>
             <option value="a_deremiser">À déremiser</option>

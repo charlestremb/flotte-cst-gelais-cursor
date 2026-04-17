@@ -91,6 +91,7 @@ export type Database = {
           prix_achat: number | null
           reservoir: boolean | null
           statut: string
+          utilisateur: string | null
         }
         Insert: {
           annee?: number | null
@@ -121,6 +122,7 @@ export type Database = {
           prix_achat?: number | null
           reservoir?: boolean | null
           statut?: string
+          utilisateur?: string | null
         }
         Update: {
           annee?: number | null
@@ -151,6 +153,7 @@ export type Database = {
           prix_achat?: number | null
           reservoir?: boolean | null
           statut?: string
+          utilisateur?: string | null
         }
         Relationships: []
       }

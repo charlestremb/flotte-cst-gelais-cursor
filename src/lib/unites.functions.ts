@@ -29,6 +29,7 @@ export type Unite = {
   km_actuel: number | null;
   date_maj_km: string | null;
   notes: string | null;
+  utilisateur: string | null;
   created_at: string;
 };
 

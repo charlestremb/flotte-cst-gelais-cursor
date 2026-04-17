@@ -9,6 +9,7 @@ import { InspectionModal } from "@/components/InspectionModal";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
 import { useState } from "react";
+import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
   loader: async ({ params }) => {
@@ -88,13 +89,24 @@ function UniteDetailPage() {
   const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
   const { unite, inspections, allUnites } = data;
   const router = useRouter();
+  const lastCalibration = getLastCalibration(inspections);
+  const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
   const [notes, setNotes] = useState(unite.notes ?? "");
+  const [utilisateur, setUtilisateur] = useState(unite.utilisateur ?? "");
+  const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleSaveUtilisateur = async () => {
+    setSavingUser(true);
+    await updateUnite({ data: { id: unite.id, updates: { utilisateur: utilisateur || null } } });
+    setSavingUser(false);
+    router.invalidate();
+  };
 
   const handleSaveNotes = async () => {
     setSaving(true);
@@ -172,9 +184,15 @@ function UniteDetailPage() {
           <h1 className="text-xl font-bold">
             {unite.marque} {unite.modele} ({unite.annee})
           </h1>
-          <div className="mt-1 flex items-center gap-2">
-            <StatutBadge statut={unite.statut} />
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            <StatutBadge statut={effectiveStatut} />
+            {effectiveStatut !== unite.statut && (
+              <span className="text-xs text-muted-foreground italic">(auto: calibration &gt; 1 an)</span>
+            )}
             <span className="text-xs text-muted-foreground">{unite.entite} · {unite.categorie}</span>
+            {unite.utilisateur && (
+              <span className="text-xs text-muted-foreground">· Utilisé par <span className="font-medium text-foreground">{unite.utilisateur}</span></span>
+            )}
           </div>
         </div>
       </div>
@@ -200,8 +218,11 @@ function UniteDetailPage() {
 
         {/* Section 2 - Statut */}
         <Section title="Statut de remisage">
-          <div className="flex items-center gap-3 mb-4">
-            <StatutBadge statut={unite.statut} />
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <StatutBadge statut={effectiveStatut} />
+            {effectiveStatut === "hors_usage" && unite.statut !== "hors_usage" && unite.categorie === "Laser" && (
+              <span className="text-xs text-destructive font-medium">⚠ Calibration expirée (&gt; 1 an)</span>
+            )}
             {unite.date_remisage && (
               <span className="text-xs text-muted-foreground">
                 Remisé le {fmt(unite.date_remisage)}
@@ -262,6 +283,28 @@ function UniteDetailPage() {
                 Confirmer le déremisage
               </button>
             )}
+            {unite.statut !== "brise" && unite.statut !== "vendu" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "brise" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
+              >
+                Marquer comme brisé
+              </button>
+            )}
+            {unite.statut === "brise" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Réparé / Remettre en service
+              </button>
+            )}
             {unite.statut !== "vendu" && (
               <button
                 onClick={() => setShowModal("vendu")}
@@ -270,6 +313,27 @@ function UniteDetailPage() {
                 Marquer comme vendu
               </button>
             )}
+          </div>
+        </Section>
+
+        {/* Section Utilisateur */}
+        <Section title="Utilisateur">
+          <p className="text-xs text-muted-foreground mb-2">Personne qui utilise cet équipement</p>
+          <div className="flex gap-2">
+            <input
+              value={utilisateur}
+              onChange={(e) => setUtilisateur(e.target.value)}
+              placeholder="Nom de l'utilisateur..."
+              className="flex-1 rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <button
+              onClick={handleSaveUtilisateur}
+              disabled={savingUser}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {savingUser ? "..." : "Enregistrer"}
+            </button>
           </div>
         </Section>
 

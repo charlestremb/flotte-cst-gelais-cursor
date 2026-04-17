@@ -50,6 +50,8 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
     prix_achat: unite?.prix_achat != null ? String(unite.prix_achat) : "",
     km_achat: unite?.km_achat != null ? String(unite.km_achat) : "",
     km_actuel: unite?.km_actuel != null ? String(unite.km_actuel) : "",
+    utilisateur: unite?.utilisateur ?? "",
+    statut: unite?.statut ?? "actif",
     notes: unite?.notes ?? "",
   });
   const [saving, setSaving] = useState(false);
@@ -85,13 +87,14 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
         prix_achat: form.prix_achat ? parseFloat(form.prix_achat) : null,
         km_achat: form.km_achat ? parseInt(form.km_achat, 10) : null,
         km_actuel: form.km_actuel ? parseInt(form.km_actuel, 10) : null,
+        utilisateur: form.utilisateur || null,
         notes: form.notes || null,
       };
 
       if (isEdit && unite) {
-        await updateUnite({ data: { id: unite.id, updates: payload } });
+        await updateUnite({ data: { id: unite.id, updates: { ...payload, statut: form.statut } } });
       } else {
-        await createUnite({ data: { ...payload, statut: "actif" } });
+        await createUnite({ data: { ...payload, statut: form.statut || "actif" } });
       }
       setSaving(false);
       onCreated();
@@ -191,6 +194,22 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
           <div>
             <label className="text-xs text-muted-foreground">Km actuel</label>
             <input type="number" value={form.km_actuel} onChange={(e) => update("km_actuel", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Utilisateur</label>
+            <input value={form.utilisateur} onChange={(e) => update("utilisateur", e.target.value)} placeholder="Qui utilise cet équipement…" className={inputCls} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Statut</label>
+            <select value={form.statut} onChange={(e) => update("statut", e.target.value)} className={inputCls}>
+              <option value="actif">Actif</option>
+              <option value="brise">Brisé</option>
+              <option value="hors_usage">Hors d'usage</option>
+              <option value="remise">Remisé</option>
+              <option value="a_remiser">À remiser</option>
+              <option value="a_deremiser">À déremiser</option>
+              <option value="vendu">Vendu</option>
+            </select>
           </div>
           <div className="col-span-2">
             <label className="text-xs text-muted-foreground">Notes</label>
