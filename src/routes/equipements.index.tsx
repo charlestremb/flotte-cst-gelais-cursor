@@ -31,6 +31,7 @@ function EquipementsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkStatut, setBulkStatut] = useState<string>("");
+  const [bulkCategorie, setBulkCategorie] = useState<string>("");
   const [bulkBusy, setBulkBusy] = useState(false);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
