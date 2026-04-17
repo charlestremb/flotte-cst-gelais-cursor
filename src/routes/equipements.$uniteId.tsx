@@ -146,13 +146,22 @@ function UniteDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           Retour aux équipements
         </Link>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
-        >
-          <Printer className="h-4 w-4" />
-          Imprimer la fiche
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+            Modifier
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+          >
+            <Printer className="h-4 w-4" />
+            Imprimer la fiche
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mb-6">
