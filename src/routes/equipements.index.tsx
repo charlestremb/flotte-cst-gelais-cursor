@@ -150,74 +150,76 @@ function EquipementsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">Équipements</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length} unité{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
-          </p>
+      <div className="sticky top-0 z-30 -mx-6 -mt-6 bg-background px-6 pt-6 pb-4 border-b border-border">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold">Équipements</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {filtered.length} unité{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={exportCSV}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              Exporter CSV
+            </button>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Ajouter une unité
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Exporter CSV
-          </button>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Ajouter une unité
-          </button>
-        </div>
-      </div>
 
-      {/* Filtres */}
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Rechercher..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-9 rounded-lg border border-input bg-secondary pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          />
+        {/* Filtres */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-secondary pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+          <select
+            value={entite}
+            onChange={(e) => setEntite(e.target.value)}
+            className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="all">Toutes les entités</option>
+            <option value="CSTG">CSTG</option>
+            <option value="9487-6216">9487-6216</option>
+          </select>
+          <select
+            value={categorie}
+            onChange={(e) => setCategorie(e.target.value)}
+            className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="all">Toutes les catégories</option>
+            {categories.map((c) => (
+              <option key={c} value={c!}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+            className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="actif">Actif</option>
+            <option value="remise">Remisé</option>
+            <option value="a_remiser">À remiser</option>
+            <option value="a_deremiser">À déremiser</option>
+            <option value="vendu">Vendu</option>
+          </select>
         </div>
-        <select
-          value={entite}
-          onChange={(e) => setEntite(e.target.value)}
-          className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          <option value="all">Toutes les entités</option>
-          <option value="CSTG">CSTG</option>
-          <option value="9487-6216">9487-6216</option>
-        </select>
-        <select
-          value={categorie}
-          onChange={(e) => setCategorie(e.target.value)}
-          className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          <option value="all">Toutes les catégories</option>
-          {categories.map((c) => (
-            <option key={c} value={c!}>{c}</option>
-          ))}
-        </select>
-        <select
-          value={statut}
-          onChange={(e) => setStatut(e.target.value)}
-          className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          <option value="all">Tous les statuts</option>
-          <option value="actif">Actif</option>
-          <option value="remise">Remisé</option>
-          <option value="a_remiser">À remiser</option>
-          <option value="a_deremiser">À déremiser</option>
-          <option value="vendu">Vendu</option>
-        </select>
       </div>
 
       {/* Barre d'actions groupées */}
