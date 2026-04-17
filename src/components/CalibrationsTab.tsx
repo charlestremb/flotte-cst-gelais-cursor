@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Search, FileText } from "lucide-react";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import type { Unite } from "@/lib/unites.functions";
@@ -14,7 +14,6 @@ type Props = {
  * (à jour / expirée si > 1 an / jamais).
  */
 export function CalibrationsTab({ calibrations, unites }: Props) {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [filtre, setFiltre] = useState<"all" | "ok" | "expiree" | "jamais">("all");
 
@@ -173,8 +172,6 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
 
       <p className="mt-3 text-xs text-muted-foreground">
         💡 Pour ajouter ou enregistrer une calibration, ouvrir la fiche du laser et utiliser la section Inspections.
-        {/* router used so import is preserved for future use */}
-        <span className="hidden">{router ? "" : null}</span>
       </p>
     </div>
   );
