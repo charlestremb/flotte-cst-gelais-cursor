@@ -242,7 +242,24 @@ function EquipementsPage() {
               disabled={!bulkStatut || bulkBusy}
               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {bulkBusy ? "Application..." : "Appliquer"}
+              {bulkBusy ? "..." : "Appliquer"}
+            </button>
+            <select
+              value={bulkCategorie}
+              onChange={(e) => setBulkCategorie(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Changer la catégorie…</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <button
+              onClick={applyBulkCategorie}
+              disabled={!bulkCategorie || bulkBusy}
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {bulkBusy ? "..." : "Appliquer"}
             </button>
             <button
               onClick={() => setConfirmBulkDelete(true)}
