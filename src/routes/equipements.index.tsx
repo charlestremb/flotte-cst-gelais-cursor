@@ -322,14 +322,19 @@ function EquipementsPage() {
                 !search && entite === "all" && categorie === "all" && statut === "all";
               const rows: ReactNode[] = [];
               let lastCat: string | null | undefined = undefined;
+              const numCompare = (a: Unite, b: Unite) =>
+                (a.numero_unite ?? "").localeCompare(b.numero_unite ?? "", undefined, {
+                  numeric: true,
+                  sensitivity: "base",
+                });
               const sorted = isUnfiltered
                 ? [...filtered].sort((a, b) => {
                     const ca = (a.categorie ?? "zzz_Sans catégorie").toLowerCase();
                     const cb = (b.categorie ?? "zzz_Sans catégorie").toLowerCase();
                     if (ca !== cb) return ca < cb ? -1 : 1;
-                    return (a.numero_unite ?? "").localeCompare(b.numero_unite ?? "");
+                    return numCompare(a, b);
                   })
-                : filtered;
+                : [...filtered].sort(numCompare);
               sorted.forEach((u) => {
                 if (isUnfiltered && u.categorie !== lastCat) {
                   lastCat = u.categorie;
