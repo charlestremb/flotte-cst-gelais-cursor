@@ -4,7 +4,7 @@ import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
