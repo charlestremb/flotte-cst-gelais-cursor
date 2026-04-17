@@ -283,6 +283,28 @@ function UniteDetailPage() {
                 Confirmer le déremisage
               </button>
             )}
+            {unite.statut !== "brise" && unite.statut !== "vendu" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "brise" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
+              >
+                Marquer comme brisé
+              </button>
+            )}
+            {unite.statut === "brise" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Réparé / Remettre en service
+              </button>
+            )}
             {unite.statut !== "vendu" && (
               <button
                 onClick={() => setShowModal("vendu")}
@@ -291,6 +313,27 @@ function UniteDetailPage() {
                 Marquer comme vendu
               </button>
             )}
+          </div>
+        </Section>
+
+        {/* Section Utilisateur */}
+        <Section title="Utilisateur">
+          <p className="text-xs text-muted-foreground mb-2">Personne qui utilise cet équipement</p>
+          <div className="flex gap-2">
+            <input
+              value={utilisateur}
+              onChange={(e) => setUtilisateur(e.target.value)}
+              placeholder="Nom de l'utilisateur..."
+              className="flex-1 rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <button
+              onClick={handleSaveUtilisateur}
+              disabled={savingUser}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {savingUser ? "..." : "Enregistrer"}
+            </button>
           </div>
         </Section>
 
