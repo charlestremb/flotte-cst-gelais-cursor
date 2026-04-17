@@ -77,6 +77,25 @@ function EquipementsPage() {
     }
   };
 
+  const applyBulkCategorie = async () => {
+    if (!bulkCategorie || selected.size === 0) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          updateUnite({ data: { id, updates: { categorie: bulkCategorie } } })
+        )
+      );
+      setSelected(new Set());
+      setBulkCategorie("");
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la mise à jour : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   const applyBulkDelete = async () => {
     setBulkBusy(true);
     try {
