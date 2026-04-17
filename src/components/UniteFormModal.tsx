@@ -10,7 +10,7 @@ type Props = {
 };
 
 const CATEGORIES = [
-  "Plaque vibrante",
+  "Laser",
   "Véhicule",
   "Pelle",
   "Loader",
