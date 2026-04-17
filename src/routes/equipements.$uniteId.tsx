@@ -172,9 +172,15 @@ function UniteDetailPage() {
           <h1 className="text-xl font-bold">
             {unite.marque} {unite.modele} ({unite.annee})
           </h1>
-          <div className="mt-1 flex items-center gap-2">
-            <StatutBadge statut={unite.statut} />
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            <StatutBadge statut={effectiveStatut} />
+            {effectiveStatut !== unite.statut && (
+              <span className="text-xs text-muted-foreground italic">(auto: calibration > 1 an)</span>
+            )}
             <span className="text-xs text-muted-foreground">{unite.entite} · {unite.categorie}</span>
+            {unite.utilisateur && (
+              <span className="text-xs text-muted-foreground">· Utilisé par <span className="font-medium text-foreground">{unite.utilisateur}</span></span>
+            )}
           </div>
         </div>
       </div>
