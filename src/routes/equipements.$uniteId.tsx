@@ -6,7 +6,8 @@ import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
-import { ArrowLeft, Save, Plus, Printer, FileText } from "lucide-react";
+import { UniteFormModal } from "@/components/UniteFormModal";
+import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
@@ -93,6 +94,7 @@ function UniteDetailPage() {
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleSaveNotes = async () => {
     setSaving(true);
@@ -144,13 +146,22 @@ function UniteDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           Retour aux équipements
         </Link>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
-        >
-          <Printer className="h-4 w-4" />
-          Imprimer la fiche
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+            Modifier
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+          >
+            <Printer className="h-4 w-4" />
+            Imprimer la fiche
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mb-6">
@@ -445,6 +456,19 @@ function UniteDetailPage() {
         unites={allUnites}
         preselectedUniteId={unite.id}
       />
+
+      {showEditModal && (
+        <UniteFormModal
+          key={unite.id}
+          open={showEditModal}
+          unite={unite}
+          onClose={() => setShowEditModal(false)}
+          onCreated={() => {
+            setShowEditModal(false);
+            router.invalidate();
+          }}
+        />
+      )}
     </div>
   );
 }
