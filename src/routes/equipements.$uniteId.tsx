@@ -456,6 +456,19 @@ function UniteDetailPage() {
         unites={allUnites}
         preselectedUniteId={unite.id}
       />
+
+      {showEditModal && (
+        <UniteFormModal
+          key={unite.id}
+          open={showEditModal}
+          unite={unite}
+          onClose={() => setShowEditModal(false)}
+          onCreated={() => {
+            setShowEditModal(false);
+            router.invalidate();
+          }}
+        />
+      )}
     </div>
   );
 }
