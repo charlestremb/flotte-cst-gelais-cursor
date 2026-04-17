@@ -41,6 +41,16 @@ function RemisagePage() {
     router.invalidate();
   };
 
+  const handleQuickToggle = async (id: string, action: "remiser" | "deremiser") => {
+    const today = new Date().toISOString().split("T")[0];
+    const updates: Record<string, unknown> =
+      action === "remiser"
+        ? { statut: "remise", date_remisage: today }
+        : { statut: "actif", date_deremisage: today };
+    await updateUnite({ data: { id, updates } });
+    router.invalidate();
+  };
+
   const renderRow = (u: Unite, action: "remiser" | "deremiser") => (
     <div
       key={u.id}
@@ -58,16 +68,24 @@ function RemisagePage() {
             <p className="mt-1 text-xs text-muted-foreground">Demandé par : <span className="text-foreground">{u.demande_par}</span></p>
           )}
         </div>
-        <button
-          onClick={() => setShowModal({ id: u.id, action, numero: u.numero_unite })}
-          className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-            action === "remiser"
-              ? "bg-destructive/15 border border-destructive/30 text-destructive hover:bg-destructive/25"
-              : "bg-success/15 border border-success/30 text-success hover:bg-success/25"
-          }`}
-        >
-          {action === "remiser" ? "Confirmer le remisage" : "Confirmer le déremisage"}
-        </button>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <button
+            onClick={() => handleQuickToggle(u.id, action)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+              action === "remiser"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : "bg-success text-success-foreground hover:bg-success/90"
+            }`}
+          >
+            {action === "remiser" ? "Remisé" : "Déremisé"}
+          </button>
+          <button
+            onClick={() => setShowModal({ id: u.id, action, numero: u.numero_unite })}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Avec date / demandeur…
+          </button>
+        </div>
       </div>
     </div>
   );
