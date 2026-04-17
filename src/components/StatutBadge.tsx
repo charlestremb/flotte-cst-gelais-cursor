@@ -20,6 +20,14 @@ export function StatutBadge({ statut }: { statut: string }) {
       label: "Vendu",
       className: "bg-muted text-muted-foreground border-muted-foreground/30",
     },
+    brise: {
+      label: "Brisé",
+      className: "bg-destructive/15 text-destructive border-destructive/30",
+    },
+    hors_usage: {
+      label: "Hors d'usage",
+      className: "bg-destructive/25 text-destructive border-destructive/50",
+    },
   };
 
   const c = config[statut] ?? config.actif;
