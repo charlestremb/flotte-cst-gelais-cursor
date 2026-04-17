@@ -9,6 +9,7 @@ import { InspectionModal } from "@/components/InspectionModal";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
 import { useState } from "react";
+import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
   loader: async ({ params }) => {
@@ -88,13 +89,24 @@ function UniteDetailPage() {
   const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
   const { unite, inspections, allUnites } = data;
   const router = useRouter();
+  const lastCalibration = getLastCalibration(inspections);
+  const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
   const [notes, setNotes] = useState(unite.notes ?? "");
+  const [utilisateur, setUtilisateur] = useState(unite.utilisateur ?? "");
+  const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleSaveUtilisateur = async () => {
+    setSavingUser(true);
+    await updateUnite({ data: { id: unite.id, updates: { utilisateur: utilisateur || null } } });
+    setSavingUser(false);
+    router.invalidate();
+  };
 
   const handleSaveNotes = async () => {
     setSaving(true);
@@ -175,7 +187,7 @@ function UniteDetailPage() {
           <div className="mt-1 flex items-center gap-2 flex-wrap">
             <StatutBadge statut={effectiveStatut} />
             {effectiveStatut !== unite.statut && (
-              <span className="text-xs text-muted-foreground italic">(auto: calibration > 1 an)</span>
+              <span className="text-xs text-muted-foreground italic">(auto: calibration &gt; 1 an)</span>
             )}
             <span className="text-xs text-muted-foreground">{unite.entite} · {unite.categorie}</span>
             {unite.utilisateur && (
