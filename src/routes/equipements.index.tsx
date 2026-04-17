@@ -283,7 +283,7 @@ function EquipementsPage() {
       )}
 
       {/* Tableau */}
-      <div className="mt-5 overflow-x-auto rounded-xl border border-border">
+      <div className="mt-5 rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary/50 text-left">
