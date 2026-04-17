@@ -39,3 +39,17 @@ export function ResultatBadge({ resultat }: { resultat: string }) {
     </span>
   );
 }
+
+export function WorkflowBadge({ statut }: { statut: string }) {
+  const config: Record<string, { label: string; cls: string }> = {
+    a_planifier: { label: "À planifier", cls: "bg-warning/15 text-warning border-warning/30" },
+    planifiee: { label: "Planifiée", cls: "bg-primary/15 text-primary border-primary/30" },
+    terminee: { label: "Terminée", cls: "bg-success/15 text-success border-success/30" },
+  };
+  const c = config[statut] ?? { label: statut, cls: "bg-muted text-muted-foreground border-muted" };
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${c.cls}`}>
+      {c.label}
+    </span>
+  );
+}
