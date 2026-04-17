@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Search, FileText, CalendarPlus, CheckCircle2 } from "lucide-react";
-import { getInspections, TYPES_INSPECTION } from "@/lib/inspections.functions";
+import { Plus, Search, FileText, CalendarPlus, CheckCircle2, Trash2 } from "lucide-react";
+import { getInspections, TYPES_INSPECTION, deleteInspection } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
@@ -208,27 +208,40 @@ function InspectionsPage() {
                         ) : <span className="text-muted-foreground text-xs">—</span>}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {i.statut_workflow === "a_planifier" && (
+                        <div className="inline-flex items-center gap-1.5">
+                          {i.statut_workflow === "a_planifier" && (
+                            <button
+                              onClick={() => setPlanifierFor(i)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            >
+                              <CalendarPlus className="h-3.5 w-3.5" />
+                              Planifier
+                            </button>
+                          )}
+                          {i.statut_workflow === "planifiee" && (
+                            <button
+                              onClick={() => setTerminerFor(i)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-success px-2.5 py-1 text-xs font-medium text-success-foreground hover:bg-success/90 transition-colors"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Inspection terminée
+                            </button>
+                          )}
+                          {i.statut_workflow === "terminee" && (
+                            <span className="text-xs text-muted-foreground">Archivée</span>
+                          )}
                           <button
-                            onClick={() => setPlanifierFor(i)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            onClick={async () => {
+                              if (!confirm(`Supprimer cette inspection (${i.type_inspection}) ?\nCette action est irréversible.`)) return;
+                              await deleteInspection({ data: { id: i.id } });
+                              router.invalidate();
+                            }}
+                            title="Supprimer l'inspection"
+                            className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
                           >
-                            <CalendarPlus className="h-3.5 w-3.5" />
-                            Planifier
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        )}
-                        {i.statut_workflow === "planifiee" && (
-                          <button
-                            onClick={() => setTerminerFor(i)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-success px-2.5 py-1 text-xs font-medium text-success-foreground hover:bg-success/90 transition-colors"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Inspection terminée
-                          </button>
-                        )}
-                        {i.statut_workflow === "terminee" && (
-                          <span className="text-xs text-muted-foreground">Archivée</span>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   );
