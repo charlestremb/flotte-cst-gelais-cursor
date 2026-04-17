@@ -218,8 +218,11 @@ function UniteDetailPage() {
 
         {/* Section 2 - Statut */}
         <Section title="Statut de remisage">
-          <div className="flex items-center gap-3 mb-4">
-            <StatutBadge statut={unite.statut} />
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <StatutBadge statut={effectiveStatut} />
+            {effectiveStatut === "hors_usage" && unite.statut !== "hors_usage" && unite.categorie === "Laser" && (
+              <span className="text-xs text-destructive font-medium">⚠ Calibration expirée (&gt; 1 an)</span>
+            )}
             {unite.date_remisage && (
               <span className="text-xs text-muted-foreground">
                 Remisé le {fmt(unite.date_remisage)}
