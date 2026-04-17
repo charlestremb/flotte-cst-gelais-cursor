@@ -327,19 +327,12 @@ function EquipementsPage() {
                   numeric: true,
                   sensitivity: "base",
                 });
-              const sorted = isUnfiltered
-                ? [...filtered].sort((a, b) => {
-                    const ca = (a.categorie ?? "zzz_Sans catégorie").toLowerCase();
-                    const cb = (b.categorie ?? "zzz_Sans catégorie").toLowerCase();
-                    if (ca !== cb) return ca < cb ? -1 : 1;
-                    return numCompare(a, b);
-                  })
-                : [...filtered].sort(numCompare);
+              const sorted = [...filtered].sort(numCompare);
               sorted.forEach((u) => {
                 if (isUnfiltered && u.categorie !== lastCat) {
                   lastCat = u.categorie;
                   rows.push(
-                    <tr key={`cat-${u.categorie ?? "none"}`} className="bg-primary/15 border-y-2 border-primary/40">
+                    <tr key={`cat-${u.categorie ?? "none"}-${u.id}`} className="bg-primary/15 border-y-2 border-primary/40">
                       <td colSpan={11} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary">
                         {u.categorie ?? "Sans catégorie"}
                       </td>
