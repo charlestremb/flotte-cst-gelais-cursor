@@ -4,7 +4,7 @@ import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
@@ -31,6 +31,7 @@ function EquipementsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkStatut, setBulkStatut] = useState<string>("");
+  const [bulkCategorie, setBulkCategorie] = useState<string>("");
   const [bulkBusy, setBulkBusy] = useState(false);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
@@ -68,6 +69,25 @@ function EquipementsPage() {
       );
       setSelected(new Set());
       setBulkStatut("");
+      router.invalidate();
+    } catch (e) {
+      alert("Erreur lors de la mise à jour : " + (e as Error).message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const applyBulkCategorie = async () => {
+    if (!bulkCategorie || selected.size === 0) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          updateUnite({ data: { id, updates: { categorie: bulkCategorie } } })
+        )
+      );
+      setSelected(new Set());
+      setBulkCategorie("");
       router.invalidate();
     } catch (e) {
       alert("Erreur lors de la mise à jour : " + (e as Error).message);
@@ -222,7 +242,24 @@ function EquipementsPage() {
               disabled={!bulkStatut || bulkBusy}
               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {bulkBusy ? "Application..." : "Appliquer"}
+              {bulkBusy ? "..." : "Appliquer"}
+            </button>
+            <select
+              value={bulkCategorie}
+              onChange={(e) => setBulkCategorie(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="">Changer la catégorie…</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <button
+              onClick={applyBulkCategorie}
+              disabled={!bulkCategorie || bulkBusy}
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {bulkBusy ? "..." : "Appliquer"}
             </button>
             <button
               onClick={() => setConfirmBulkDelete(true)}
@@ -274,62 +311,91 @@ function EquipementsPage() {
               <th className="px-4 py-3 font-medium text-muted-foreground">Année</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Couleur</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Plaque</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">N° série</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Statut</th>
               <th className="px-4 py-3 font-medium text-muted-foreground w-12"></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((u) => (
-              <tr
-                key={u.id}
-                className={`border-b border-border last:border-0 transition-colors ${
-                  selected.has(u.id) ? "bg-primary/5" : "hover:bg-secondary/30"
-                }`}
-              >
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(u.id)}
-                    onChange={() => toggleOne(u.id)}
-                    className="h-4 w-4 cursor-pointer accent-primary"
-                    aria-label={`Sélectionner ${u.numero_unite}`}
-                  />
-                </td>
-                <td className="px-4 py-3">
-                  <Link
-                    to="/equipements/$uniteId"
-                    params={{ uniteId: u.id }}
-                    className="font-semibold text-primary hover:underline"
+            {(() => {
+              const isUnfiltered =
+                !search && entite === "all" && categorie === "all" && statut === "all";
+              const rows: ReactNode[] = [];
+              let lastCat: string | null | undefined = undefined;
+              const sorted = isUnfiltered
+                ? [...filtered].sort((a, b) => {
+                    const ca = (a.categorie ?? "zzz_Sans catégorie").toLowerCase();
+                    const cb = (b.categorie ?? "zzz_Sans catégorie").toLowerCase();
+                    if (ca !== cb) return ca < cb ? -1 : 1;
+                    return (a.numero_unite ?? "").localeCompare(b.numero_unite ?? "");
+                  })
+                : filtered;
+              sorted.forEach((u) => {
+                if (isUnfiltered && u.categorie !== lastCat) {
+                  lastCat = u.categorie;
+                  rows.push(
+                    <tr key={`cat-${u.categorie ?? "none"}`} className="bg-primary/15 border-y-2 border-primary/40">
+                      <td colSpan={11} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary">
+                        {u.categorie ?? "Sans catégorie"}
+                      </td>
+                    </tr>
+                  );
+                }
+                rows.push(
+                  <tr
+                    key={u.id}
+                    className={`border-b border-border last:border-0 transition-colors ${
+                      selected.has(u.id) ? "bg-primary/5" : "hover:bg-secondary/30"
+                    }`}
                   >
-                    {u.numero_unite}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{u.entite}</td>
-                <td className="px-4 py-3">{u.categorie}</td>
-                <td className="px-4 py-3">
-                  {u.marque} {u.modele}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{u.annee}</td>
-                <td className="px-4 py-3 text-muted-foreground">{u.couleur ?? "—"}</td>
-                <td className="px-4 py-3 font-mono text-xs">{u.plaque}</td>
-                <td className="px-4 py-3">
-                  <StatutBadge statut={u.statut} />
-                </td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => setConfirmDelete(u)}
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                    title="Supprimer cette unité"
-                    aria-label="Supprimer cette unité"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(u.id)}
+                        onChange={() => toggleOne(u.id)}
+                        className="h-4 w-4 cursor-pointer accent-primary"
+                        aria-label={`Sélectionner ${u.numero_unite}`}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        to="/equipements/$uniteId"
+                        params={{ uniteId: u.id }}
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        {u.numero_unite}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{u.entite}</td>
+                    <td className="px-4 py-3">{u.categorie}</td>
+                    <td className="px-4 py-3">
+                      {u.marque} {u.modele}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{u.annee}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{u.couleur ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{u.plaque}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{u.numero_serie ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <StatutBadge statut={u.statut} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setConfirmDelete(u)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Supprimer cette unité"
+                        aria-label="Supprimer cette unité"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              });
+              return rows;
+            })()}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={11} className="px-4 py-8 text-center text-muted-foreground">
                   Aucune unité trouvée
                 </td>
               </tr>
