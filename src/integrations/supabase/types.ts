@@ -18,36 +18,45 @@ export type Database = {
         Row: {
           created_at: string
           date_inspection: string | null
+          date_limite: string | null
+          date_reception_lettre: string | null
           document_url: string | null
           effectuee_par: string | null
           id: string
           notes_inspection: string | null
           prochaine_inspection: string | null
           resultat: string
+          statut_workflow: string
           type_inspection: string
           unite_id: string
         }
         Insert: {
           created_at?: string
           date_inspection?: string | null
+          date_limite?: string | null
+          date_reception_lettre?: string | null
           document_url?: string | null
           effectuee_par?: string | null
           id?: string
           notes_inspection?: string | null
           prochaine_inspection?: string | null
           resultat?: string
+          statut_workflow?: string
           type_inspection: string
           unite_id: string
         }
         Update: {
           created_at?: string
           date_inspection?: string | null
+          date_limite?: string | null
+          date_reception_lettre?: string | null
           document_url?: string | null
           effectuee_par?: string | null
           id?: string
           notes_inspection?: string | null
           prochaine_inspection?: string | null
           resultat?: string
+          statut_workflow?: string
           type_inspection?: string
           unite_id?: string
         }

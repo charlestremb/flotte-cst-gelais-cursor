@@ -16,7 +16,8 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
   const [uniteId, setUniteId] = useState(preselectedUniteId ?? "");
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>(TYPES_INSPECTION[0]);
-  const [datePlanifiee, setDatePlanifiee] = useState("");
+  const [dateReception, setDateReception] = useState("");
+  const [dateLimite, setDateLimite] = useState("");
   const [effectueePar, setEffectueePar] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -24,10 +25,13 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
 
   if (!open) return null;
 
+  // Exclure les lasers de la liste : ils ont leur propre flux Calibration
+  const eligibles = unites.filter((u) => u.categorie !== "Laser");
+
   const filteredUnites = preselectedUniteId
-    ? unites.filter((u) => u.id === preselectedUniteId)
+    ? eligibles.filter((u) => u.id === preselectedUniteId)
     : search
-      ? unites.filter((u) => {
+      ? eligibles.filter((u) => {
           const q = search.toLowerCase();
           return (
             u.numero_unite.toLowerCase().includes(q) ||
@@ -63,9 +67,9 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
       data: {
         unite_id: uniteId,
         type_inspection: type,
-        prochaine_inspection: datePlanifiee || null,
+        date_reception_lettre: dateReception || null,
+        date_limite: dateLimite || null,
         effectuee_par: effectueePar || null,
-        resultat: "En attente",
         document_url: documentUrl,
       },
     });
@@ -73,7 +77,8 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
     setUniteId(preselectedUniteId ?? "");
     setSearch("");
     setType(TYPES_INSPECTION[0]);
-    setDatePlanifiee("");
+    setDateReception("");
+    setDateLimite("");
     setEffectueePar("");
     setPdfFile(null);
     onCreated();
@@ -84,7 +89,8 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4">Planifier une inspection</h3>
+        <h3 className="text-lg font-semibold mb-1">Nouvelle inspection</h3>
+        <p className="text-xs text-muted-foreground mb-4">L'inspection sera créée à l'état « À planifier ».</p>
         <div className="space-y-3">
           {!preselectedUniteId && (
             <div>
@@ -150,18 +156,29 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             </select>
           </div>
 
-          <div>
-            <label className="text-sm text-muted-foreground">Date planifiée</label>
-            <input
-              type="date"
-              value={datePlanifiee}
-              onChange={(e) => setDatePlanifiee(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-muted-foreground">Réception de la lettre</label>
+              <input
+                type="date"
+                value={dateReception}
+                onChange={(e) => setDateReception(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground">Date limite</label>
+              <input
+                type="date"
+                value={dateLimite}
+                onChange={(e) => setDateLimite(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="text-sm text-muted-foreground">Effectuée par</label>
+            <label className="text-sm text-muted-foreground">Effectuée par (optionnel)</label>
             <input
               type="text"
               value={effectueePar}
@@ -219,7 +236,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             disabled={!uniteId || saving}
             className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            {uploading ? "Téléversement..." : saving ? "Enregistrement..." : "Planifier"}
+            {uploading ? "Téléversement..." : saving ? "Enregistrement..." : "Créer"}
           </button>
         </div>
       </div>
