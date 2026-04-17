@@ -6,7 +6,8 @@ import type { Inspection } from "@/lib/inspections.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
-import { ArrowLeft, Save, Plus, Printer, FileText } from "lucide-react";
+import { UniteFormModal } from "@/components/UniteFormModal";
+import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
