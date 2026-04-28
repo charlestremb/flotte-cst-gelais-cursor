@@ -115,6 +115,8 @@ function EquipementsPage() {
   const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
   const filtered = unites.filter((u) => {
+    // Les unités vendues sont archivées et ne s'affichent pas ici (sauf si on filtre explicitement sur "vendu")
+    if (statut !== "vendu" && u.statut === "vendu") return false;
     if (entite !== "all" && u.entite !== entite) return false;
     if (categorie !== "all" && u.categorie !== categorie) return false;
     if (statut !== "all" && u.statut !== statut) return false;
