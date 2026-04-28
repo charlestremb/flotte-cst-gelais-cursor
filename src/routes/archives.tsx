@@ -30,6 +30,12 @@ function ArchivesPage() {
     router.invalidate();
   };
 
+  const handleUnarchive = async (u: Unite) => {
+    if (!confirm(`Désarchiver l'unité ${u.numero_unite} ?\n\nElle redeviendra active et réapparaîtra dans la liste des équipements.`)) return;
+    await updateUnite({ data: { id: u.id, updates: { statut: "actif", date_disposition: null } } });
+    router.invalidate();
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Archives</h1>
