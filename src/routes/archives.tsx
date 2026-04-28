@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnites, deleteUnite } from "@/lib/unites.functions";
+import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArchiveRestore } from "lucide-react";
 
 export const Route = createFileRoute("/archives")({
   loader: () => getUnites(),
@@ -27,6 +27,12 @@ function ArchivesPage() {
   const handleDelete = async (u: Unite) => {
     if (!confirm(`Supprimer définitivement l'unité ${u.numero_unite} ?\n\nToutes les inspections liées seront aussi supprimées.\nCette action est irréversible.`)) return;
     await deleteUnite({ data: { id: u.id } });
+    router.invalidate();
+  };
+
+  const handleUnarchive = async (u: Unite) => {
+    if (!confirm(`Désarchiver l'unité ${u.numero_unite} ?\n\nElle redeviendra active et réapparaîtra dans la liste des équipements.`)) return;
+    await updateUnite({ data: { id: u.id, updates: { statut: "actif", date_disposition: null } } });
     router.invalidate();
   };
 
@@ -70,13 +76,23 @@ function ArchivesPage() {
                 <td className="px-4 py-3 text-muted-foreground">{fmtMoney(u.prix_achat)}</td>
                 <td className="px-4 py-3"><StatutBadge statut={u.statut} /></td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(u)}
-                    title="Supprimer définitivement"
-                    className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="inline-flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleUnarchive(u)}
+                      title="Désarchiver (remettre en actif)"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                    >
+                      <ArchiveRestore className="h-3.5 w-3.5" />
+                      Désarchiver
+                    </button>
+                    <button
+                      onClick={() => handleDelete(u)}
+                      title="Supprimer définitivement"
+                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
