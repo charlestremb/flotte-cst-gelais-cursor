@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { getUnites, deleteUnite } from "@/lib/unites.functions";
+import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArchiveRestore } from "lucide-react";
 
 export const Route = createFileRoute("/archives")({
   loader: () => getUnites(),
