@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Truck } from "lucide-react";
+import logoStGelais from "@/assets/logo-st-gelais.jpg";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -36,9 +36,11 @@ function AuthPage() {
     <div className="fixed inset-0 flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Truck className="h-7 w-7" />
-          </div>
+          <img
+            src={logoStGelais}
+            alt="Les Constructions St-Gelais"
+            className="mx-auto h-20 w-auto rounded-xl bg-white p-2"
+          />
           <h1 className="mt-4 text-2xl font-bold text-foreground">
             Les Constructions St-Gelais
           </h1>

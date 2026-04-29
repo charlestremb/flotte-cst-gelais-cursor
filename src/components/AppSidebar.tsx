@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import logoStGelais from "@/assets/logo-st-gelais.jpg";
 
 const baseNavItems = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard },
@@ -38,9 +39,11 @@ export function AppSidebar() {
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground text-sm">
-          CST
-        </div>
+        <img
+          src={logoStGelais}
+          alt="Les Constructions St-Gelais"
+          className="h-10 w-10 shrink-0 rounded-lg bg-white object-contain p-0.5"
+        />
         {!collapsed && (
           <div className="overflow-hidden">
             <p className="text-sm font-semibold text-foreground truncate">
