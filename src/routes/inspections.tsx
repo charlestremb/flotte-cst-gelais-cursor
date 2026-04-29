@@ -9,6 +9,7 @@ import { AlertDot, WorkflowBadge, ResultatBadge, getInspectionAlertLevel } from 
 import { InspectionModal } from "@/components/InspectionModal";
 import { PlanifierModal, TerminerModal } from "@/components/PlanifierModal";
 import { CalibrationsTab } from "@/components/CalibrationsTab";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/inspections")({
   loader: async () => {
@@ -230,17 +231,19 @@ function InspectionsPage() {
                           {i.statut_workflow === "terminee" && (
                             <span className="text-xs text-muted-foreground">Archivée</span>
                           )}
-                          <button
-                            onClick={async () => {
-                              if (!confirm(`Supprimer cette inspection (${i.type_inspection}) ?\nCette action est irréversible.`)) return;
-                              await deleteInspection({ data: { id: i.id } });
-                              router.invalidate();
-                            }}
-                            title="Supprimer l'inspection"
-                            className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Supprimer cette inspection (${i.type_inspection}) ?\nCette action est irréversible.`)) return;
+                                await deleteInspection({ data: { id: i.id } });
+                                router.invalidate();
+                              }}
+                              title="Supprimer l'inspection"
+                              className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
