@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin as supabase } from "@/integrations/supabase/client.server";
 
 export type Unite = {
   id: string;
