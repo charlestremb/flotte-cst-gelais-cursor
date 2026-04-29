@@ -5,6 +5,7 @@ import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/equipements/")({
 function EquipementsPage() {
   const unites = Route.useLoaderData() as Unite[];
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
   const [categorie, setCategorie] = useState("all");
@@ -269,14 +271,16 @@ function EquipementsPage() {
             >
               {bulkBusy ? "..." : "Appliquer"}
             </button>
-            <button
-              onClick={() => setConfirmBulkDelete(true)}
-              disabled={bulkBusy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
-            >
-              <Trash2 className="h-4 w-4" />
-              Supprimer
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setConfirmBulkDelete(true)}
+                disabled={bulkBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
+              </button>
+            )}
             <button
               onClick={() => setSelected(new Set())}
               className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -385,14 +389,16 @@ function EquipementsPage() {
                       <StatutBadge statut={u.statut} />
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => setConfirmDelete(u)}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        title="Supprimer cette unité"
-                        aria-label="Supprimer cette unité"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setConfirmDelete(u)}
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          title="Supprimer cette unité"
+                          aria-label="Supprimer cette unité"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
