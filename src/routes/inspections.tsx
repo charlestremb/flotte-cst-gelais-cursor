@@ -24,6 +24,7 @@ type Tab = "vehicules" | "calibrations";
 function InspectionsPage() {
   const data = Route.useLoaderData() as { inspections: InspectionWithUnite[]; unites: Unite[] };
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const [tab, setTab] = useState<Tab>("vehicules");
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
