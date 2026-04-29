@@ -3,6 +3,7 @@ import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { Trash2, ArchiveRestore } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/archives")({
   loader: () => getUnites(),
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/archives")({
 function ArchivesPage() {
   const unites = Route.useLoaderData() as Unite[];
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const vendues = unites.filter((u) => u.statut === "vendu");
 
   const fmt = (d: string | null) =>
@@ -85,13 +87,15 @@ function ArchivesPage() {
                       <ArchiveRestore className="h-3.5 w-3.5" />
                       Désarchiver
                     </button>
-                    <button
-                      onClick={() => handleDelete(u)}
-                      title="Supprimer définitivement"
-                      className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(u)}
+                        title="Supprimer définitivement"
+                        className="inline-flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

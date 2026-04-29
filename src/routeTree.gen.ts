@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RemisageRouteImport } from './routes/remisage'
 import { Route as InspectionsRouteImport } from './routes/inspections'
 import { Route as EquipementsRouteImport } from './routes/equipements'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArchivesRouteImport } from './routes/archives'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EquipementsIndexRouteImport } from './routes/equipements.index'
 import { Route as EquipementsUniteIdRouteImport } from './routes/equipements.$uniteId'
+import { Route as AdminUtilisateursRouteImport } from './routes/admin.utilisateurs'
 
 const RemisageRoute = RemisageRouteImport.update({
   id: '/remisage',
@@ -30,6 +32,11 @@ const InspectionsRoute = InspectionsRouteImport.update({
 const EquipementsRoute = EquipementsRouteImport.update({
   id: '/equipements',
   path: '/equipements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArchivesRoute = ArchivesRouteImport.update({
@@ -52,21 +59,30 @@ const EquipementsUniteIdRoute = EquipementsUniteIdRouteImport.update({
   path: '/$uniteId',
   getParentRoute: () => EquipementsRoute,
 } as any)
+const AdminUtilisateursRoute = AdminUtilisateursRouteImport.update({
+  id: '/admin/utilisateurs',
+  path: '/admin/utilisateurs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/archives': typeof ArchivesRoute
+  '/auth': typeof AuthRoute
   '/equipements': typeof EquipementsRouteWithChildren
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements/': typeof EquipementsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/archives': typeof ArchivesRoute
+  '/auth': typeof AuthRoute
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements': typeof EquipementsIndexRoute
 }
@@ -74,9 +90,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/archives': typeof ArchivesRoute
+  '/auth': typeof AuthRoute
   '/equipements': typeof EquipementsRouteWithChildren
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements/': typeof EquipementsIndexRoute
 }
@@ -85,26 +103,32 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/archives'
+    | '/auth'
     | '/equipements'
     | '/inspections'
     | '/remisage'
+    | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/archives'
+    | '/auth'
     | '/inspections'
     | '/remisage'
+    | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements'
   id:
     | '__root__'
     | '/'
     | '/archives'
+    | '/auth'
     | '/equipements'
     | '/inspections'
     | '/remisage'
+    | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements/'
   fileRoutesById: FileRoutesById
@@ -112,9 +136,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArchivesRoute: typeof ArchivesRoute
+  AuthRoute: typeof AuthRoute
   EquipementsRoute: typeof EquipementsRouteWithChildren
   InspectionsRoute: typeof InspectionsRoute
   RemisageRoute: typeof RemisageRoute
+  AdminUtilisateursRoute: typeof AdminUtilisateursRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -138,6 +164,13 @@ declare module '@tanstack/react-router' {
       path: '/equipements'
       fullPath: '/equipements'
       preLoaderRoute: typeof EquipementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/archives': {
@@ -168,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipementsUniteIdRouteImport
       parentRoute: typeof EquipementsRoute
     }
+    '/admin/utilisateurs': {
+      id: '/admin/utilisateurs'
+      path: '/admin/utilisateurs'
+      fullPath: '/admin/utilisateurs'
+      preLoaderRoute: typeof AdminUtilisateursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -188,9 +228,11 @@ const EquipementsRouteWithChildren = EquipementsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArchivesRoute: ArchivesRoute,
+  AuthRoute: AuthRoute,
   EquipementsRoute: EquipementsRouteWithChildren,
   InspectionsRoute: InspectionsRoute,
   RemisageRoute: RemisageRoute,
+  AdminUtilisateursRoute: AdminUtilisateursRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

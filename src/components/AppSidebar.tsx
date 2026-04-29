@@ -7,10 +7,15 @@ import {
   Archive,
   ChevronLeft,
   ChevronRight,
+  Users,
+  LogOut,
+  Shield,
+  User as UserIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
-const navItems = [
+const baseNavItems = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/equipements", label: "Équipements", icon: Truck },
   { to: "/remisage", label: "Remisage", icon: ParkingSquare },
@@ -21,6 +26,11 @@ const navItems = [
 export function AppSidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
+
+  const navItems = isAdmin
+    ? [...baseNavItems, { to: "/admin/utilisateurs", label: "Utilisateurs", icon: Users } as const]
+    : baseNavItems;
 
   return (
     <aside
@@ -64,6 +74,43 @@ export function AppSidebar() {
           );
         })}
       </nav>
+
+      {/* User info + logout */}
+      {user && !collapsed && (
+        <div className="border-t border-border p-3">
+          <div className="mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5">
+            {isAdmin ? (
+              <Shield className="h-4 w-4 shrink-0 text-primary" />
+            ) : (
+              <UserIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-medium text-foreground">
+                {user.email}
+              </p>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                {isAdmin ? "Administrateur" : "Utilisateur"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut()}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Déconnexion
+          </button>
+        </div>
+      )}
+      {user && collapsed && (
+        <button
+          onClick={() => signOut()}
+          className="flex h-12 items-center justify-center border-t border-border text-muted-foreground hover:text-foreground transition-colors"
+          title="Déconnexion"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      )}
 
       {/* Collapse toggle */}
       <button
