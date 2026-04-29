@@ -1,6 +1,6 @@
 # CLAUDE.md — Gestion de flotte · Les Constructions St-Gelais
 
-Document de référence pour tout assistant IA (Claude, Lovable, etc.) qui intervient sur ce projet. À lire **avant** de modifier le code.
+Document de référence pour tout assistant IA (Claude, Cursor, etc.) qui intervient sur ce projet. À lire **avant** de modifier le code.
 
 ---
 
@@ -29,7 +29,7 @@ L'interface est **100 % en français**. Tous les textes visibles, libellés, mes
 | Runtime serveur | Cloudflare Workers (compatibilité Node) |
 | Styling | **Tailwind CSS v4** (config dans `src/styles.css`) |
 | UI | shadcn/ui (Radix primitives) + lucide-react |
-| Backend | **Lovable Cloud** (Supabase managé) |
+| Backend | **Supabase** (PostgreSQL managé) |
 | Base de données | PostgreSQL (Supabase) |
 | Auth | Supabase Auth (email + mot de passe) |
 | Storage | Bucket `inspection-documents` |
@@ -180,12 +180,14 @@ export const maFonction = createServerFn({ method: "POST" })
 
 ---
 
-## 7. Secrets disponibles
+## 7. Variables d'environnement
 
-Configurés dans Lovable Cloud (ne **jamais** demander à l'utilisateur) :
-- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`
-- `LOVABLE_API_KEY` (pour appels IA via Lovable AI Gateway)
-- `RESEND_API_KEY` (envoi courriels notifications)
+Fichier **`.env.local`** à la racine (jamais versionné dans Git) :
+- `VITE_SUPABASE_URL` — URL du projet Supabase (côté client)
+- `VITE_SUPABASE_ANON_KEY` — clé publique anon Supabase (côté client)
+- `SUPABASE_URL` — même URL, pour le SSR / server functions
+- `SUPABASE_SERVICE_ROLE_KEY` — clé service role (server-side uniquement, **jamais** exposée côté client)
+- `RESEND_API_KEY` — envoi courriels notifications garage
 
 Côté client : utiliser `import.meta.env.VITE_*`. Côté serveur : `process.env.*` à l'intérieur d'un `.handler()`.
 
@@ -209,7 +211,7 @@ Côté client : utiliser `import.meta.env.VITE_*`. Côté serveur : `process.env
 - Importer `@/integrations/supabase/client.server` côté client
 - Utiliser `child_process`, `sharp`, `puppeteer` ou autres deps Node-only (Cloudflare Workers)
 - Créer des routes via React Router DOM ou un autre router
-- Mettre en place une `.env` manuellement (géré par Lovable Cloud)
+- Versionner `.env.local` ou tout fichier contenant des secrets dans Git
 - Désactiver la confirmation email sans demande explicite (déjà désactivée pour ce projet — conservé tel quel)
 - Ajouter une page « Inscription » publique (les comptes sont créés par l'admin)
 
