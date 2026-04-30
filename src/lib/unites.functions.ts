@@ -1,5 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin as supabase } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+async function assertAdmin(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Accès réservé aux administrateurs");
+}
 
 export type Unite = {
   id: string;
@@ -34,7 +46,7 @@ export type Unite = {
 };
 
 export const getUnites = createServerFn({ method: "GET" }).handler(async () => {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("unites")
     .select("*")
     .order("numero_unite");
@@ -45,7 +57,7 @@ export const getUnites = createServerFn({ method: "GET" }).handler(async () => {
 export const getUnite = createServerFn({ method: "GET" })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const { data: unite, error } = await supabase
+    const { data: unite, error } = await supabaseAdmin
       .from("unites")
       .select("*")
       .eq("id", data.id)
@@ -55,9 +67,10 @@ export const getUnite = createServerFn({ method: "GET" })
   });
 
 export const updateUnite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string; updates: Partial<Unite> }) => data)
   .handler(async ({ data }) => {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("unites")
       .update(data.updates)
       .eq("id", data.id);
@@ -66,19 +79,22 @@ export const updateUnite = createServerFn({ method: "POST" })
   });
 
 export const createUnite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: Partial<Unite> & { numero_unite: string; entite: string }) => data)
   .handler(async ({ data }) => {
-    const { error } = await supabase.from("unites").insert(data);
+    const { error } = await supabaseAdmin.from("unites").insert(data);
     if (error) throw new Error(error.message);
     return { success: true };
   });
 
 export const deleteUnite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     // Supprimer les inspections liées d'abord (pas de FK cascade)
-    await supabase.from("inspections").delete().eq("unite_id", data.id);
-    const { error } = await supabase.from("unites").delete().eq("id", data.id);
+    await supabaseAdmin.from("inspections").delete().eq("unite_id", data.id);
+    const { error } = await supabaseAdmin.from("unites").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { success: true };
   });

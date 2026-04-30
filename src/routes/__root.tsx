@@ -1,6 +1,17 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, redirect } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import appCss from "../styles.css?url";
 import { AppLayout } from "../components/AppLayout";
+import { getAccessTokenFromRequest, createSupabaseServerClient } from "../integrations/supabase/server-client";
+
+const checkAuth = createServerFn({ method: "GET" }).handler(async () => {
+  const token = getAccessTokenFromRequest();
+  if (!token) return { authenticated: false };
+
+  const supabase = createSupabaseServerClient(token);
+  const { data, error } = await supabase.auth.getClaims(token);
+  return { authenticated: !error && !!data?.claims?.sub };
+});
 
 function NotFoundComponent() {
   return (
@@ -25,6 +36,11 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/auth") return;
+    const { authenticated } = await checkAuth();
+    if (!authenticated) throw redirect({ to: "/auth" });
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },

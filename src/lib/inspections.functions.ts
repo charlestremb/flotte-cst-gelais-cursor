@@ -1,5 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin as supabase } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+async function assertAdmin(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Accès réservé aux administrateurs");
+}
 
 export type StatutWorkflow = "a_planifier" | "planifiee" | "terminee";
 
@@ -42,7 +54,7 @@ export const RESULTATS = ["Passé", "Échoué", "En attente"] as const;
 
 export const getInspections = createServerFn({ method: "GET" }).handler(
   async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("inspections")
       .select(
         "*, unite:unites(id, numero_unite, entite, marque, modele, categorie)"
@@ -56,7 +68,7 @@ export const getInspections = createServerFn({ method: "GET" }).handler(
 export const getInspectionsForUnite = createServerFn({ method: "GET" })
   .inputValidator((data: { uniteId: string }) => data)
   .handler(async ({ data }) => {
-    const { data: inspections, error } = await supabase
+    const { data: inspections, error } = await supabaseAdmin
       .from("inspections")
       .select("*")
       .eq("unite_id", data.uniteId)
@@ -66,6 +78,7 @@ export const getInspectionsForUnite = createServerFn({ method: "GET" })
   });
 
 export const createInspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(
     (data: {
       unite_id: string;
@@ -77,7 +90,7 @@ export const createInspection = createServerFn({ method: "POST" })
     }) => data
   )
   .handler(async ({ data }) => {
-    const { data: inserted, error } = await supabase
+    const { data: inserted, error } = await supabaseAdmin
       .from("inspections")
       .insert({
         unite_id: data.unite_id,
@@ -106,9 +119,10 @@ export const createInspection = createServerFn({ method: "POST" })
   });
 
 export const planifierInspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string; date_inspection: string }) => data)
   .handler(async ({ data }) => {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("inspections")
       .update({
         date_inspection: data.date_inspection,
@@ -121,11 +135,12 @@ export const planifierInspection = createServerFn({ method: "POST" })
   });
 
 export const terminerInspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(
     (data: { id: string; resultat?: string; effectuee_par?: string | null }) => data
   )
   .handler(async ({ data }) => {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("inspections")
       .update({
         statut_workflow: "terminee",
@@ -138,11 +153,12 @@ export const terminerInspection = createServerFn({ method: "POST" })
   });
 
 export const updateInspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(
     (data: { id: string; updates: Partial<Inspection> }) => data
   )
   .handler(async ({ data }) => {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("inspections")
       .update(data.updates)
       .eq("id", data.id);
@@ -151,9 +167,11 @@ export const updateInspection = createServerFn({ method: "POST" })
   });
 
 export const deleteInspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const { error } = await supabase
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
       .from("inspections")
       .delete()
       .eq("id", data.id);

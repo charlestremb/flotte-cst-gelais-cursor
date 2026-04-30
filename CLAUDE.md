@@ -1,12 +1,27 @@
-# CLAUDE.md — Gestion de flotte · Les Constructions St-Gelais
+# CLAUDE.md
 
-Document de référence pour tout assistant IA (Claude, Cursor, etc.) qui intervient sur ce projet. À lire **avant** de modifier le code.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
-## 1. Vue d'ensemble
+## Commandes de développement
 
-Application interne de **gestion de flotte d'équipements de construction** pour **Les Constructions St-Gelais** (entreprise québécoise basée au Québec).
+```bash
+npm run dev        # serveur de développement (Vite + Cloudflare Workers)
+npm run build      # build de production
+npm run build:dev  # build en mode développement
+npm run preview    # prévisualisation du build
+npm run lint       # ESLint
+npm run format     # Prettier (formatage automatique)
+```
+
+TypeScript est vérifié par Vite à la compilation — il n'y a pas de commande `tsc` séparée. Il n'y a pas de suite de tests.
+
+---
+
+## Vue d'ensemble
+
+Application interne de **gestion de flotte d'équipements de construction** pour **Les Constructions St-Gelais** (entreprise québécoise).
 
 L'application sert à :
 - Suivre l'inventaire des unités (camions, équipements, machinerie)
@@ -20,7 +35,7 @@ L'interface est **100 % en français**. Tous les textes visibles, libellés, mes
 
 ---
 
-## 2. Stack technique
+## Stack technique
 
 | Couche | Techno |
 |---|---|
@@ -30,7 +45,6 @@ L'interface est **100 % en français**. Tous les textes visibles, libellés, mes
 | Styling | **Tailwind CSS v4** (config dans `src/styles.css`) |
 | UI | shadcn/ui (Radix primitives) + lucide-react |
 | Backend | **Supabase** (PostgreSQL managé) |
-| Base de données | PostgreSQL (Supabase) |
 | Auth | Supabase Auth (email + mot de passe) |
 | Storage | Bucket `inspection-documents` |
 | Email | Resend (via `RESEND_API_KEY`) pour notifications garage |
@@ -40,7 +54,7 @@ Routing : **file-based** dans `src/routes/` (ne **jamais** éditer `src/routeTre
 
 ---
 
-## 3. Design system
+## Design system
 
 Définir **toutes** les couleurs comme tokens sémantiques dans `src/styles.css` (format `oklch`). **Ne jamais** utiliser de classes Tailwind couleur en dur (`text-white`, `bg-yellow-500`, etc.) dans les composants.
 
@@ -63,7 +77,7 @@ Définir **toutes** les couleurs comme tokens sémantiques dans `src/styles.css`
 
 ---
 
-## 4. Authentification & rôles
+## Authentification & rôles
 
 ### Modèle
 - **Email + mot de passe uniquement** (pas de Google, pas de magic link)
@@ -96,7 +110,7 @@ Le `AuthProvider` est monté dans `AppLayout`. La redirection vers `/auth` se fa
 
 ---
 
-## 5. Schéma de base de données
+## Schéma de base de données
 
 ### `unites`
 Inventaire des équipements. Champs principaux :
@@ -126,10 +140,31 @@ Voir section auth ci-dessus.
 
 ---
 
-## 6. Architecture du code
+## Architecture du code
+
+### Pattern de chargement des données
+
+Les données sont chargées dans la fonction `loader` de chaque route (SSR via TanStack Start), **pas** dans des hooks `useEffect` ou `useQuery` côté composant. Les composants reçoivent les données via `Route.useLoaderData()`.
+
+```ts
+export const Route = createFileRoute("/ma-route")({
+  loader: async () => {
+    const [unites, inspections] = await Promise.all([getUnites(), getInspections()]);
+    return { unites, inspections };
+  },
+  component: MaPage,
+  notFoundComponent: () => <div>...</div>,  // toujours fournir
+  errorComponent: ({ error }) => <div>{error.message}</div>,  // toujours fournir
+});
+
+function MaPage() {
+  const { unites } = Route.useLoaderData();
+  // ...
+}
+```
 
 ### Server functions (TanStack Start)
-**Toujours** utiliser `createServerFn` pour les opérations DB, pas de `supabase.from(...)` direct depuis les composants pour les opérations principales.
+**Toujours** utiliser `createServerFn` pour les opérations DB, pas de `supabase.from(...)` direct depuis les composants.
 
 Localisation : `src/lib/*.functions.ts`
 - `unites.functions.ts` — CRUD unités
@@ -140,66 +175,72 @@ Localisation : `src/lib/*.functions.ts`
 Pattern :
 ```ts
 export const maFonction = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth]) // si besoin auth
+  .middleware([requireSupabaseAuth]) // uniquement si on a besoin du contexte user côté serveur
   .inputValidator((data: { ... }) => data)
   .handler(async ({ data, context }) => { ... });
 ```
+
+Note : la plupart des server functions utilisent `supabaseAdmin` (service role) directement plutôt que `requireSupabaseAuth`, car la protection est déjà assurée par le RLS et l'auth côté client.
 
 ### Clients Supabase
 | Client | Import | Usage |
 |---|---|---|
 | Browser | `@/integrations/supabase/client` | Composants, auth, listeners |
-| Auth middleware | `@/integrations/supabase/auth-middleware` | Server fn agissant comme l'utilisateur |
+| Auth middleware | `@/integrations/supabase/auth-middleware` | Server fn agissant comme l'utilisateur (expose `requireSupabaseAuth`) |
 | Admin (service role) | `@/integrations/supabase/client.server` | Opérations admin (ex : créer un user) — **JAMAIS** côté client |
 
 ### Routes (file-based)
-| Fichier | URL | Accès |
-|---|---|---|
-| `index.tsx` | `/` | Tableau de bord |
-| `equipements.tsx` + `equipements.index.tsx` | `/equipements` | Liste des unités |
-| `equipements.$uniteId.tsx` | `/equipements/:id` | Détail d'une unité + inspections |
-| `remisage.tsx` | `/remisage` | Gestion remisage saisonnier |
-| `inspections.tsx` | `/inspections` | Toutes les inspections + onglet Calibrations |
-| `archives.tsx` | `/archives` | Unités vendues/disposées (avec désarchivage) |
-| `admin.utilisateurs.tsx` | `/admin/utilisateurs` | Gestion utilisateurs (admin uniquement) |
-| `auth.tsx` | `/auth` | Connexion |
+| Fichier | URL |
+|---|---|
+| `index.tsx` | `/` — Tableau de bord |
+| `equipements.tsx` + `equipements.index.tsx` | `/equipements` — Liste des unités |
+| `equipements.$uniteId.tsx` | `/equipements/:id` — Détail + inspections |
+| `remisage.tsx` | `/remisage` — Gestion remisage saisonnier |
+| `inspections.tsx` | `/inspections` — Toutes les inspections + onglet Calibrations |
+| `archives.tsx` | `/archives` — Unités vendues/disposées |
+| `admin.utilisateurs.tsx` | `/admin/utilisateurs` — Gestion utilisateurs (admin) |
+| `auth.tsx` | `/auth` — Connexion |
 
 ### Composants clés
 - `AppLayout` — wrap avec `AuthProvider`, redirection auth, sidebar
 - `AppSidebar` — navigation (item « Utilisateurs » conditionnel à `isAdmin`), logo, infos user, déconnexion
 - `UniteFormModal` — formulaire création/édition unité
-- `InspectionModal` — création d'inspection (à planifier)
-- `PlanifierModal` / `TerminerModal` — workflow inspection
+- `InspectionModal` — création d'inspection (statut initial `a_planifier`)
+- `PlanifierModal` — passage au statut `planifiee` (date d'inspection)
 - `StatutBadge` — badge coloré par statut
 - `InspectionAlerts` — composants d'alerte (`AlertDot`, `WorkflowBadge`, `ResultatBadge`) + helper `getInspectionAlertLevel`
 - `CalibrationsTab` — onglet calibrations laser dans la page inspections
 
 ### Helpers
-- `src/lib/laser-status.ts` — `getEffectiveStatut`, `getLastCalibration` pour le statut effectif des unités laser
+- `src/lib/laser-status.ts` — `getEffectiveStatut`, `getLastCalibration` : un laser sans calibration depuis plus d'un an passe automatiquement à `hors_usage`
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
 
 ---
 
-## 7. Variables d'environnement
+## Variables d'environnement
 
 Fichier **`.env.local`** à la racine (jamais versionné dans Git) :
-- `VITE_SUPABASE_URL` — URL du projet Supabase (côté client)
-- `VITE_SUPABASE_ANON_KEY` — clé publique anon Supabase (côté client)
-- `SUPABASE_URL` — même URL, pour le SSR / server functions
-- `SUPABASE_SERVICE_ROLE_KEY` — clé service role (server-side uniquement, **jamais** exposée côté client)
-- `RESEND_API_KEY` — envoi courriels notifications garage
 
-Côté client : utiliser `import.meta.env.VITE_*`. Côté serveur : `process.env.*` à l'intérieur d'un `.handler()`.
+| Variable | Côté | Usage |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Client | URL du projet Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Client | Clé anon publique |
+| `SUPABASE_URL` | Serveur | Même URL, pour le SSR / server functions |
+| `SUPABASE_ANON_KEY` | Serveur | Clé anon, utilisée par `requireSupabaseAuth` middleware |
+| `SUPABASE_SERVICE_ROLE_KEY` | Serveur | Clé service role — **jamais** côté client |
+| `RESEND_API_KEY` | Serveur | Envoi courriels notifications garage |
+
+Côté client : `import.meta.env.VITE_*`. Côté serveur : `process.env.*` dans `.handler()`.
 
 ---
 
-## 8. Conventions à respecter
+## Conventions à respecter
 
 ### Toujours
 - **Français** pour tout texte UI, message, libellé, alerte
 - **Tokens sémantiques** (`bg-primary`, `text-foreground`) — pas de couleurs en dur
 - **Server functions** pour les opérations DB (pas de logique métier dans les composants)
-- **Vérifier `isAdmin`** avant de montrer des actions de suppression (en plus du RLS qui protège déjà côté DB)
+- **Vérifier `isAdmin`** avant de montrer des actions de suppression (en plus du RLS)
 - **Migrations** via l'outil dédié pour tout changement de schéma — jamais en édition manuelle de `types.ts`
 - **Date format** : `toLocaleDateString("fr-CA")` ou `Intl.DateTimeFormat("fr-CA")`
 - **Format monétaire** : `Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" })`
@@ -212,18 +253,17 @@ Côté client : utiliser `import.meta.env.VITE_*`. Côté serveur : `process.env
 - Utiliser `child_process`, `sharp`, `puppeteer` ou autres deps Node-only (Cloudflare Workers)
 - Créer des routes via React Router DOM ou un autre router
 - Versionner `.env.local` ou tout fichier contenant des secrets dans Git
-- Désactiver la confirmation email sans demande explicite (déjà désactivée pour ce projet — conservé tel quel)
 - Ajouter une page « Inscription » publique (les comptes sont créés par l'admin)
 
 ---
 
-## 9. Workflow d'inspection
+## Workflow d'inspection
 
 ```
 [a_planifier]
-   ↓ planifierInspection (date_inspection)
+   ↓ planifierInspection (date_inspection) — via PlanifierModal
 [planifiee]
-   ↓ terminerInspection (resultat)
+   ↓ terminerInspection (resultat) — inline dans equipements.$uniteId.tsx
 [terminee]
 ```
 
@@ -235,21 +275,21 @@ Suppression d'une unité = suppression en cascade des inspections liées (géré
 
 ---
 
-## 10. Notes opérationnelles
+## Notes opérationnelles
 
 - **Préfixe routes** : pas de slash final (`/equipements`, pas `/equipements/`)
-- **Imports** : `@tanstack/react-router` (pas `react-router-dom`)
+- **Imports router** : `@tanstack/react-router` (pas `react-router-dom`)
 - **404 / erreurs** : toujours fournir `notFoundComponent` et `errorComponent` sur les routes avec loader
-- **Réinitialisation de mot de passe** : pas implémentée (à ajouter au besoin avec page `/reset-password` dédiée)
+- **Réinitialisation de mot de passe** : pas implémentée (à ajouter avec page `/reset-password` dédiée)
 - **Print** : styles `@media print` configurés dans `styles.css` (cache la sidebar, fond blanc)
 
 ---
 
-## 11. Avant de livrer une modification
+## Avant de livrer une modification
 
 1. ✅ Texte UI en français
 2. ✅ Couleurs via tokens sémantiques
 3. ✅ Permissions vérifiées (UI + RLS si nouvelle table/opération)
-4. ✅ Server function utilisée pour la DB (pas de Supabase direct dans le composant si possible)
+4. ✅ Server function utilisée pour la DB (pas de Supabase direct dans le composant)
 5. ✅ Pas de modification des fichiers auto-générés
-6. ✅ Build passe sans erreur TypeScript
+6. ✅ Build passe sans erreur TypeScript (`npm run build`)
