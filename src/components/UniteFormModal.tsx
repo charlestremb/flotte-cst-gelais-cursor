@@ -95,9 +95,16 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
         await updateUnite({ data: { id: unite.id, updates: { ...payload, statut: form.statut } } });
       } else {
         await createUnite({ data: { ...payload, statut: form.statut || "actif" } });
+        setForm({
+          numero_unite: "", entite: "CSTG", categorie: "", marque: "", modele: "",
+          annee: "", numero_serie: "", plaque: "", couleur: "", poids: "", pnvb: "",
+          nb_essieux: "", date_acquisition: "", date_disposition: "", prix_achat: "",
+          km_achat: "", km_actuel: "", utilisateur: "", statut: "actif", notes: "",
+        });
       }
       setSaving(false);
       onCreated();
+      onClose();
     } catch (e) {
       setSaving(false);
       setError((e as Error).message);
