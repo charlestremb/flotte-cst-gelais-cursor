@@ -28,6 +28,10 @@ export function StatutBadge({ statut }: { statut: string }) {
       label: "Hors d'usage",
       className: "bg-destructive/25 text-destructive border-destructive/50",
     },
+    interdit_circuler: {
+      label: "Interdit de circuler",
+      className: "bg-destructive/40 text-destructive border-destructive/70",
+    },
   };
 
   const c = config[statut] ?? config.actif;

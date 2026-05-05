@@ -11,6 +11,7 @@ const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
   { value: "brise", label: "Brisé" },
   { value: "hors_usage", label: "Hors d'usage" },
+  { value: "interdit_circuler", label: "Interdit de circuler" },
   { value: "remise", label: "Remisé" },
   { value: "a_remiser", label: "À remiser" },
   { value: "a_deremiser", label: "À déremiser" },
@@ -222,6 +223,7 @@ function EquipementsPage() {
             <option value="actif">Actif</option>
             <option value="brise">Brisé</option>
             <option value="hors_usage">Hors d'usage</option>
+            <option value="interdit_circuler">Interdit de circuler</option>
             <option value="remise">Remisé</option>
             <option value="a_remiser">À remiser</option>
             <option value="a_deremiser">À déremiser</option>

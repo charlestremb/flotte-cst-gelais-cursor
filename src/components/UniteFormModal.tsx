@@ -215,6 +215,7 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
               <option value="remise">Remisé</option>
               <option value="a_remiser">À remiser</option>
               <option value="a_deremiser">À déremiser</option>
+              <option value="interdit_circuler">Interdit de circuler</option>
               <option value="vendu">Vendu</option>
             </select>
           </div>
