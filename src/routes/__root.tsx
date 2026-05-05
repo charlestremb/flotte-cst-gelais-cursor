@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, redirect } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, redirect, isRedirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import appCss from "../styles.css?url";
 import { AppLayout } from "../components/AppLayout";
@@ -38,8 +38,14 @@ function NotFoundComponent() {
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
     if (location.pathname === "/auth") return;
-    const { authenticated } = await checkAuth();
-    if (!authenticated) throw redirect({ to: "/auth" });
+    try {
+      const { authenticated } = await checkAuth();
+      if (!authenticated) throw redirect({ to: "/auth" });
+    } catch (e) {
+      if (isRedirect(e)) throw e;
+      // JWT expiré ou toute autre erreur d'auth → rediriger vers la connexion
+      throw redirect({ to: "/auth" });
+    }
   },
   head: () => ({
     meta: [
