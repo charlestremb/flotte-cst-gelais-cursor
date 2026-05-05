@@ -100,13 +100,25 @@ La sécurité est appliquée à **deux niveaux** :
 - `user_roles` — table séparée (jamais stocker le rôle dans `profiles`, sinon faille d'élévation de privilèges)
 - Fonction `has_role(_user_id, _role)` en `SECURITY DEFINER` pour éviter la récursion RLS
 
+### Flux SSR (côté serveur)
+La vérification d'auth se fait dans le `beforeLoad` de `__root.tsx` via `checkAuth()` :
+- Lit le cookie `sb-access-token` (écrit automatiquement par le client browser via `cookieSyncStorage` dans `client.ts`)
+- Valide le JWT avec `supabase.auth.getClaims()`
+- Redirige vers `/auth` si non authentifié (toutes routes sauf `/auth`)
+
+```ts
+// src/integrations/supabase/server-client.ts
+getAccessTokenFromRequest()        // extrait le token du cookie sb-access-token
+createSupabaseServerClient(token)  // client Supabase per-request avec le token user
+```
+
 ### Hook client
 ```ts
 import { useAuth } from "@/hooks/use-auth";
 const { user, session, role, isAdmin, signIn, signOut, loading } = useAuth();
 ```
 
-Le `AuthProvider` est monté dans `AppLayout`. La redirection vers `/auth` se fait dans `LayoutInner` si non connecté.
+Le `AuthProvider` est monté dans `AppLayout`. Le rôle est chargé depuis la table `user_roles` après connexion.
 
 ---
 
@@ -214,21 +226,24 @@ Note : la plupart des server functions utilisent `supabaseAdmin` (service role) 
 ### Helpers
 - `src/lib/laser-status.ts` — `getEffectiveStatut`, `getLastCalibration` : un laser sans calibration depuis plus d'un an passe automatiquement à `hors_usage`
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
+- `assertAdmin(userId)` dans `unites.functions.ts` — lève une erreur si l'utilisateur n'est pas admin ; à appeler dans les server functions de suppression
 
 ---
 
 ## Variables d'environnement
 
-Fichier **`.env.local`** à la racine (jamais versionné dans Git) :
+Deux fichiers à la racine (jamais versionnés dans Git) :
+- **`.env.local`** — variables client (`VITE_*`) lues par Vite
+- **`.dev.vars`** — variables serveur lues par `wrangler dev` (Cloudflare Workers local)
 
-| Variable | Côté | Usage |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Client | URL du projet Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Client | Clé anon publique |
-| `SUPABASE_URL` | Serveur | Même URL, pour le SSR / server functions |
-| `SUPABASE_ANON_KEY` | Serveur | Clé anon, utilisée par `requireSupabaseAuth` middleware |
-| `SUPABASE_SERVICE_ROLE_KEY` | Serveur | Clé service role — **jamais** côté client |
-| `RESEND_API_KEY` | Serveur | Envoi courriels notifications garage |
+| Variable | Fichier | Côté | Usage |
+|---|---|---|---|
+| `VITE_SUPABASE_URL` | `.env.local` | Client | URL du projet Supabase |
+| `VITE_SUPABASE_ANON_KEY` | `.env.local` | Client | Clé anon publique |
+| `SUPABASE_URL` | `.dev.vars` | Serveur | Même URL, pour le SSR / server functions |
+| `SUPABASE_ANON_KEY` | `.dev.vars` | Serveur | Clé anon, utilisée par `requireSupabaseAuth` middleware |
+| `SUPABASE_SERVICE_ROLE_KEY` | `.dev.vars` | Serveur | Clé service role — **jamais** côté client |
+| `RESEND_API_KEY` | `.dev.vars` | Serveur | Envoi courriels notifications garage |
 
 Côté client : `import.meta.env.VITE_*`. Côté serveur : `process.env.*` dans `.handler()`.
 
@@ -246,7 +261,7 @@ Côté client : `import.meta.env.VITE_*`. Côté serveur : `process.env.*` dans 
 - **Format monétaire** : `Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" })`
 
 ### Jamais
-- Modifier `src/integrations/supabase/client.ts` ou `types.ts` (auto-générés)
+- Modifier `src/integrations/supabase/types.ts` (auto-généré depuis le schéma Supabase) ou `src/integrations/supabase/client.ts`
 - Modifier `src/routeTree.gen.ts` (auto-généré)
 - Stocker le rôle utilisateur dans `profiles` (faille de sécurité)
 - Importer `@/integrations/supabase/client.server` côté client

@@ -305,6 +305,28 @@ function UniteDetailPage() {
                 Réparé / Remettre en service
               </button>
             )}
+            {unite.statut !== "interdit_circuler" && unite.statut !== "vendu" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "interdit_circuler" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-destructive/30 border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/40 transition-colors"
+              >
+                Interdit de circuler
+              </button>
+            )}
+            {unite.statut === "interdit_circuler" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Lever l'interdiction de circuler
+              </button>
+            )}
             {unite.statut !== "vendu" && (
               <button
                 onClick={() => setShowModal("vendu")}
