@@ -13,4 +13,7 @@ export default defineConfig({
     react(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
   ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
 });
