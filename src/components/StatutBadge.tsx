@@ -29,7 +29,7 @@ export function StatutBadge({ statut }: { statut: string }) {
       className: "bg-destructive/25 text-destructive border-destructive/50",
     },
     interdit_circuler: {
-      label: "Interdit de circuler",
+      label: "Interdit\u00A0de circuler",
       className: "bg-destructive/40 text-destructive border-destructive/70",
     },
   };
