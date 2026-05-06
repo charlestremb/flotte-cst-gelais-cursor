@@ -66,7 +66,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
     await createInspection({
       data: {
         unite_id: uniteId,
-        type_inspection: type,
+        type_inspection: isCalibration ? "Calibration" : type,
         date_reception_lettre: dateReception || null,
         date_limite: dateLimite || null,
         effectuee_par: effectueePar || null,
@@ -85,12 +85,19 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
   };
 
   const selectedUnite = unites.find((u) => u.id === uniteId);
+  const isCalibration = selectedUnite?.categorie === "Laser";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-1">Nouvelle inspection</h3>
-        <p className="text-xs text-muted-foreground mb-4">L'inspection sera créée à l'état « À planifier ».</p>
+        <h3 className="text-lg font-semibold mb-1">
+          {isCalibration ? "Nouvelle calibration" : "Nouvelle inspection"}
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          {isCalibration
+            ? "La calibration sera créée à l'état « À planifier »."
+            : "L'inspection sera créée à l'état « À planifier »."}
+        </p>
         <div className="space-y-3">
           {!preselectedUniteId && (
             <div>
@@ -143,22 +150,26 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             </div>
           )}
 
-          <div>
-            <label className="text-sm text-muted-foreground">Type d'inspection</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              {TYPES_INSPECTION.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+          {!isCalibration && (
+            <div>
+              <label className="text-sm text-muted-foreground">Type d'inspection</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                {TYPES_INSPECTION.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-muted-foreground">Réception de la lettre</label>
+              <label className="text-sm text-muted-foreground">
+                {isCalibration ? "Date de calibration" : "Réception de la lettre"}
+              </label>
               <input
                 type="date"
                 value={dateReception}
@@ -167,7 +178,9 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
               />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Date limite</label>
+              <label className="text-sm text-muted-foreground">
+                {isCalibration ? "Date d'échéance" : "Date limite"}
+              </label>
               <input
                 type="date"
                 value={dateLimite}
@@ -189,7 +202,9 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
           </div>
 
           <div>
-            <label className="text-sm text-muted-foreground">Document PDF (feuille d'inspection)</label>
+            <label className="text-sm text-muted-foreground">
+              {isCalibration ? "Certificat de calibration PDF" : "Document PDF (feuille d'inspection)"}
+            </label>
             {pdfFile ? (
               <div className="mt-1 flex items-center justify-between rounded-lg border border-input bg-secondary px-3 py-2 text-sm">
                 <div className="flex items-center gap-2 min-w-0">
@@ -220,9 +235,11 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             )}
           </div>
 
-          <div className="rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-xs text-muted-foreground">
-            ✉️ Un courriel sera envoyé automatiquement au garage à la création.
-          </div>
+          {!isCalibration && (
+            <div className="rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-xs text-muted-foreground">
+              ✉️ Un courriel sera envoyé automatiquement au garage à la création.
+            </div>
+          )}
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
