@@ -16,6 +16,7 @@ const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "a_remiser", label: "À remiser" },
   { value: "a_deremiser", label: "À déremiser" },
   { value: "vendu", label: "Vendu" },
+  { value: "archive", label: "Archivé" },
 ];
 
 export const Route = createFileRoute("/equipements/")({
@@ -118,8 +119,9 @@ function EquipementsPage() {
   const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
   const filtered = unites.filter((u) => {
-    // Les unités vendues sont archivées et ne s'affichent pas ici (sauf si on filtre explicitement sur "vendu")
+    // Les unités vendues/archivées ne s'affichent pas ici (sauf si filtre explicite)
     if (statut !== "vendu" && u.statut === "vendu") return false;
+    if (statut !== "archive" && u.statut === "archive") return false;
     if (entite !== "all" && u.entite !== entite) return false;
     if (categorie !== "all" && u.categorie !== categorie) return false;
     if (statut !== "all" && u.statut !== statut) return false;
@@ -228,6 +230,7 @@ function EquipementsPage() {
             <option value="a_remiser">À remiser</option>
             <option value="a_deremiser">À déremiser</option>
             <option value="vendu">Vendu</option>
+            <option value="archive">Archivé</option>
           </select>
         </div>
       </div>

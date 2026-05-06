@@ -20,6 +20,10 @@ export function StatutBadge({ statut }: { statut: string }) {
       label: "Vendu",
       className: "bg-muted text-muted-foreground border-muted-foreground/30",
     },
+    archive: {
+      label: "Archivé",
+      className: "bg-muted text-muted-foreground border-muted-foreground/30",
+    },
     brise: {
       label: "Brisé",
       className: "bg-destructive/15 text-destructive border-destructive/30",

@@ -334,12 +334,24 @@ function UniteDetailPage() {
                 Lever l'interdiction de circuler
               </button>
             )}
-            {unite.statut !== "vendu" && (
+            {unite.statut !== "vendu" && unite.statut !== "archive" && (
               <button
                 onClick={() => setShowModal("vendu")}
                 className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Marquer comme vendu
+              </button>
+            )}
+            {unite.statut !== "archive" && unite.statut !== "vendu" && (
+              <button
+                onClick={async () => {
+                  if (!confirm(`Archiver l'unité ${unite.numero_unite} ?\n\nElle n'apparaîtra plus dans la liste des équipements.`)) return;
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "archive" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Archiver
               </button>
             )}
           </div>
