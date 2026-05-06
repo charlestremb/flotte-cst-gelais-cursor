@@ -3,6 +3,9 @@ import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { getInspectionsForUnite } from "@/lib/inspections.functions";
 import type { Inspection } from "@/lib/inspections.functions";
+import { getDocumentsVehicule, deleteDocumentVehicule } from "@/lib/documents.functions";
+import type { DocumentVehicule } from "@/lib/documents.functions";
+import { DocumentVehiculeModal } from "@/components/DocumentVehiculeModal";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
@@ -13,12 +16,13 @@ import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
   loader: async ({ params }) => {
-    const [unite, inspections, allUnites] = await Promise.all([
+    const [unite, inspections, allUnites, documents] = await Promise.all([
       getUnite({ data: { id: params.uniteId } }),
       getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
       getUnites(),
+      getDocumentsVehicule({ data: { uniteId: params.uniteId } }),
     ]);
-    return { unite, inspections, allUnites };
+    return { unite, inspections, allUnites, documents };
   },
   component: UniteDetailPage,
   notFoundComponent: () => (
@@ -86,8 +90,8 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
-  const { unite, inspections, allUnites } = data;
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[] };
+  const { unite, inspections, allUnites, documents } = data;
   const router = useRouter();
   const lastCalibration = getLastCalibration(inspections);
   const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
@@ -100,6 +104,7 @@ function UniteDetailPage() {
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
 
   const handleSaveUtilisateur = async () => {
     setSavingUser(true);
@@ -377,6 +382,71 @@ function UniteDetailPage() {
             <DateBadge date={unite.assurance_expiration} label="Expiration assurance" />
             <DateBadge date={unite.immatriculation_expiration} label="Expiration immatriculation" />
           </div>
+
+          {/* Documents téléversés */}
+          {documents.length > 0 && (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50 text-left">
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Date d'échéance</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Fichier</th>
+                    {isAdmin && <th className="px-3 py-2" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map((doc) => (
+                    <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+                      <td className="px-3 py-2 font-medium capitalize text-foreground">
+                        {doc.type === "immatriculation" ? "Immatriculation" : "Assurance"}
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {doc.date_echeance
+                          ? new Date(doc.date_echeance + "T00:00:00").toLocaleDateString("fr-CA")
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2">
+                        {doc.document_url ? (
+                          <a
+                            href={doc.document_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            {doc.nom_fichier ?? "Voir"}
+                          </a>
+                        ) : "—"}
+                      </td>
+                      {isAdmin && (
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Supprimer ce document ?")) return;
+                              await deleteDocumentVehicule({ data: { id: doc.id } });
+                              router.invalidate();
+                            }}
+                            className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowDocumentModal(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Ajouter un document
+          </button>
         </Section>
 
         {/* Section 5 - Inspections */}
@@ -555,6 +625,13 @@ function UniteDetailPage() {
           }}
         />
       )}
+
+      <DocumentVehiculeModal
+        open={showDocumentModal}
+        onClose={() => setShowDocumentModal(false)}
+        onCreated={() => router.invalidate()}
+        uniteId={unite.id}
+      />
     </div>
   );
 }
