@@ -13,6 +13,7 @@ import { UniteFormModal } from "@/components/UniteFormModal";
 import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
 import { useState } from "react";
 import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
   loader: async ({ params }) => {
@@ -93,6 +94,7 @@ function UniteDetailPage() {
   const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[] };
   const { unite, inspections, allUnites, documents } = data;
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const lastCalibration = getLastCalibration(inspections);
   const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
   const [notes, setNotes] = useState(unite.notes ?? "");
