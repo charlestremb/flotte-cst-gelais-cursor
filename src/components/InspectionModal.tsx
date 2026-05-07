@@ -51,7 +51,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
       const ext = pdfFile.name.split(".").pop() ?? "pdf";
       const path = `${uniteId}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
-        .from("inspection-documents")
+        .from("inspections")
         .upload(path, pdfFile, { contentType: pdfFile.type || "application/pdf" });
       setUploading(false);
       if (upErr) {
@@ -59,7 +59,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
         setSaving(false);
         return;
       }
-      const { data: pub } = supabase.storage.from("inspection-documents").getPublicUrl(path);
+      const { data: pub } = supabase.storage.from("inspections").getPublicUrl(path);
       documentUrl = pub.publicUrl;
     }
 
