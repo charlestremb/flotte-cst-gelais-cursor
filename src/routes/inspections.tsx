@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Search, FileText, CalendarPlus, CheckCircle2, Trash2 } from "lucide-react";
 import { getInspections, TYPES_INSPECTION, deleteInspection } from "@/lib/inspections.functions";
@@ -11,7 +11,12 @@ import { PlanifierModal, TerminerModal } from "@/components/PlanifierModal";
 import { CalibrationsTab } from "@/components/CalibrationsTab";
 import { useAuth } from "@/hooks/use-auth";
 
+type Tab = "vehicules" | "calibrations";
+
 export const Route = createFileRoute("/inspections")({
+  validateSearch: (search: Record<string, unknown>): { tab?: Tab } => ({
+    tab: search.tab === "calibrations" ? "calibrations" : undefined,
+  }),
   loader: async () => {
     const [inspections, unites] = await Promise.all([getInspections(), getUnites()]);
     return { inspections, unites };
@@ -19,13 +24,17 @@ export const Route = createFileRoute("/inspections")({
   component: InspectionsPage,
 });
 
-type Tab = "vehicules" | "calibrations";
-
 function InspectionsPage() {
   const data = Route.useLoaderData() as { inspections: InspectionWithUnite[]; unites: Unite[] };
   const router = useRouter();
+  const navigate = useNavigate({ from: "/inspections" });
   const { isAdmin } = useAuth();
-  const [tab, setTab] = useState<Tab>("vehicules");
+  const { tab: tabParam } = Route.useSearch();
+  const tab: Tab = tabParam ?? "vehicules";
+
+  const setTab = (t: Tab) => {
+    navigate({ search: t === "calibrations" ? { tab: "calibrations" } : {}, replace: true });
+  };
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
   const [type, setType] = useState("all");
