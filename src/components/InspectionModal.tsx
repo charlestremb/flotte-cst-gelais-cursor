@@ -177,7 +177,15 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
               <input
                 type="date"
                 value={dateReception}
-                onChange={(e) => setDateReception(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDateReception(val);
+                  if (isCalibration && val) {
+                    const d = new Date(val);
+                    d.setFullYear(d.getFullYear() + 1);
+                    setDateLimite(d.toISOString().slice(0, 10));
+                  }
+                }}
                 className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
