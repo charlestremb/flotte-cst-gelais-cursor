@@ -519,7 +519,10 @@ function UniteDetailPage() {
                               <td className="px-2 py-2 text-right">
                                 <button
                                   onClick={async () => {
-                                    if (!confirm("Supprimer cette inspection ?")) return;
+                                    const msg = i.document_url
+                                      ? "Supprimer cette inspection ?\n\n⚠️ Un PDF est attaché. Pensez à le supprimer manuellement dans Supabase Storage (bucket documents-calibration ou documents-inspection)."
+                                      : "Supprimer cette inspection ?";
+                                    if (!confirm(msg)) return;
                                     await deleteInspection({ data: { id: i.id } });
                                     router.invalidate();
                                   }}

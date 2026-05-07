@@ -84,6 +84,7 @@ export const createInspection = createServerFn({ method: "POST" })
     (data: {
       unite_id: string;
       type_inspection: string;
+      date_inspection?: string | null;
       date_reception_lettre?: string | null;
       date_limite?: string | null;
       effectuee_par?: string | null;
@@ -103,6 +104,7 @@ export const createInspection = createServerFn({ method: "POST" })
         unite_id: data.unite_id,
         numero_unite: unite?.numero_unite ?? null,
         type_inspection: data.type_inspection,
+        date_inspection: data.date_inspection ?? null,
         date_reception_lettre: data.date_reception_lettre ?? null,
         date_limite: data.date_limite ?? null,
         prochaine_inspection: data.date_limite ?? null,

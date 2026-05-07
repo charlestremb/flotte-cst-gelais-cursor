@@ -71,7 +71,8 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
       data: {
         unite_id: uniteId,
         type_inspection: isCalibration ? "Calibration" : type,
-        date_reception_lettre: dateReception || null,
+        date_inspection: isCalibration ? (dateReception || null) : null,
+        date_reception_lettre: isCalibration ? null : (dateReception || null),
         date_limite: dateLimite || null,
         effectuee_par: effectueePar || null,
         document_url: documentUrl,
