@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
-import { getInspectionsForUnite, updateInspection } from "@/lib/inspections.functions";
+import { getInspectionsForUnite, updateInspection, deleteInspection } from "@/lib/inspections.functions";
 import type { Inspection } from "@/lib/inspections.functions";
 import { getDocumentsVehicule, deleteDocumentVehicule } from "@/lib/documents.functions";
 import type { DocumentVehicule } from "@/lib/documents.functions";
@@ -497,7 +497,8 @@ function UniteDetailPage() {
                           <th className="w-28 px-3 py-2 font-medium text-muted-foreground">Type</th>
                           <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Résultat</th>
                           <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
-                              <th className="w-20 px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                                  <th className="w-14 px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                          {isAdmin && <th className="w-8 px-2 py-2" />}
                         </tr>
                       </thead>
                       <tbody>
@@ -509,26 +510,26 @@ function UniteDetailPage() {
                             <td className="px-3 py-2 text-muted-foreground truncate">{i.notes_inspection ?? "—"}</td>
                             <td className="px-3 py-2">
                               {i.document_url ? (
-                                <div className="flex items-center gap-2">
-                                  <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
-                                    <FileText className="h-3.5 w-3.5" /> Voir
-                                  </a>
-                                  {isAdmin && (
-                                    <button
-                                      onClick={async () => {
-                                        if (!confirm("Supprimer ce PDF ?")) return;
-                                        await updateInspection({ data: { id: i.id, updates: { document_url: null } } });
-                                        router.invalidate();
-                                      }}
-                                      title="Supprimer le PDF"
-                                      className="text-muted-foreground hover:text-destructive transition-colors"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
-                                  )}
-                                </div>
+                                <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                                  <FileText className="h-3.5 w-3.5" /> Voir
+                                </a>
                               ) : <span className="text-muted-foreground">—</span>}
                             </td>
+                            {isAdmin && (
+                              <td className="px-2 py-2 text-right">
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm("Supprimer cette inspection ?")) return;
+                                    await deleteInspection({ data: { id: i.id } });
+                                    router.invalidate();
+                                  }}
+                                  title="Supprimer l'inspection"
+                                  className="text-muted-foreground hover:text-destructive transition-colors"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
