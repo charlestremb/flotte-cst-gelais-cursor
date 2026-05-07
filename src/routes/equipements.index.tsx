@@ -237,7 +237,7 @@ function EquipementsPage() {
 
       {/* Barre d'actions groupées */}
       {selected.size > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
+        <div className="sticky top-0 z-20 mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3 shadow-md backdrop-blur-sm">
           <span className="text-sm font-medium text-foreground">
             {selected.size} unité{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}
           </span>
