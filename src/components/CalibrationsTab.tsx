@@ -145,6 +145,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
                     <Link
                       to="/equipements/$uniteId"
                       params={{ uniteId: r.unite.id }}
+                      search={{ from: "calibrations" }}
                       className="font-semibold text-primary hover:underline"
                     >
                       {r.unite.numero_unite}

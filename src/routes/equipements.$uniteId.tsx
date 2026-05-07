@@ -16,6 +16,9 @@ import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
+  validateSearch: (search: Record<string, unknown>): { from?: string } => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   loader: async ({ params }) => {
     const [unite, inspections, allUnites, documents] = await Promise.all([
       getUnite({ data: { id: params.uniteId } }),
@@ -95,6 +98,7 @@ function UniteDetailPage() {
   const { unite, inspections, allUnites, documents } = data;
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const { from } = Route.useSearch();
   const lastCalibration = getLastCalibration(inspections);
   const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
   const [notes, setNotes] = useState(unite.notes ?? "");
@@ -168,13 +172,24 @@ function UniteDetailPage() {
   return (
     <div className="print-area">
       <div className="no-print flex items-center justify-between mb-4">
-        <Link
-          to="/equipements"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour aux équipements
-        </Link>
+        {from === "calibrations" ? (
+          <Link
+            to="/inspections"
+            search={{ tab: "calibrations" }}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux calibrations laser
+          </Link>
+        ) : (
+          <Link
+            to="/equipements"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux équipements
+          </Link>
+        )}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowEditModal(true)}
