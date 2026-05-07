@@ -101,7 +101,7 @@ function UniteDetailPage() {
   const [utilisateur, setUtilisateur] = useState(unite.utilisateur ?? "");
   const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
+  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | "brise" | "reparer" | "interdit_circuler" | "lever_interdiction" | "archive" | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
@@ -142,6 +142,16 @@ function UniteDetailPage() {
     } else if (showModal === "a_deremiser") {
       updates.statut = "a_deremiser";
       updates.demande_par = modalDemandePar;
+    } else if (showModal === "brise") {
+      updates.statut = "brise";
+    } else if (showModal === "reparer") {
+      updates.statut = "actif";
+    } else if (showModal === "interdit_circuler") {
+      updates.statut = "interdit_circuler";
+    } else if (showModal === "lever_interdiction") {
+      updates.statut = "actif";
+    } else if (showModal === "archive") {
+      updates.statut = "archive";
     }
 
     await updateUnite({ data: { id: unite.id, updates } });
@@ -292,10 +302,7 @@ function UniteDetailPage() {
             )}
             {unite.statut !== "brise" && unite.statut !== "vendu" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "brise" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("brise")}
                 className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
               >
                 Marquer comme brisé
@@ -303,10 +310,7 @@ function UniteDetailPage() {
             )}
             {unite.statut === "brise" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("reparer")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Réparé / Remettre en service
@@ -314,10 +318,7 @@ function UniteDetailPage() {
             )}
             {unite.statut !== "interdit_circuler" && unite.statut !== "vendu" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "interdit_circuler" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("interdit_circuler")}
                 className="rounded-lg bg-destructive/30 border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/40 transition-colors"
               >
                 Interdit de circuler
@@ -325,10 +326,7 @@ function UniteDetailPage() {
             )}
             {unite.statut === "interdit_circuler" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("lever_interdiction")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Lever l'interdiction de circuler
@@ -344,11 +342,7 @@ function UniteDetailPage() {
             )}
             {unite.statut !== "archive" && unite.statut !== "vendu" && (
               <button
-                onClick={async () => {
-                  if (!confirm(`Archiver l'unité ${unite.numero_unite} ?\n\nElle n'apparaîtra plus dans la liste des équipements.`)) return;
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "archive" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("archive")}
                 className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Archiver
@@ -577,19 +571,23 @@ function UniteDetailPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">
-              {showModal === "remiser"
-                ? "Remiser l'unité"
-                : showModal === "deremiser"
-                  ? "Déremiser l'unité"
-                  : showModal === "a_remiser"
-                    ? "Marquer à remiser"
-                    : showModal === "a_deremiser"
-                      ? "Marquer à déremiser"
-                      : "Marquer comme vendu"}
+            <h3 className="text-lg font-semibold mb-1">
+              {showModal === "remiser" ? "Remiser l'unité"
+                : showModal === "deremiser" ? "Déremiser l'unité"
+                : showModal === "a_remiser" ? "Marquer à remiser"
+                : showModal === "a_deremiser" ? "Marquer à déremiser"
+                : showModal === "vendu" ? "Marquer comme vendu"
+                : showModal === "brise" ? "Marquer comme brisé"
+                : showModal === "reparer" ? "Remettre en service"
+                : showModal === "interdit_circuler" ? "Interdire de circuler"
+                : showModal === "lever_interdiction" ? "Lever l'interdiction de circuler"
+                : "Archiver l'unité"}
             </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Êtes-vous certain de vouloir effectuer cette action sur l'unité <span className="font-semibold text-foreground">{unite.numero_unite}</span> ?
+            </p>
             <div className="space-y-3">
-              {showModal !== "a_remiser" && showModal !== "a_deremiser" && (
+              {(showModal === "remiser" || showModal === "deremiser" || showModal === "vendu") && (
                 <div>
                   <label className="text-sm text-muted-foreground">Date</label>
                   <input
@@ -600,7 +598,7 @@ function UniteDetailPage() {
                   />
                 </div>
               )}
-              {showModal !== "vendu" && (
+              {(showModal === "remiser" || showModal === "deremiser" || showModal === "a_remiser" || showModal === "a_deremiser") && (
                 <div>
                   <label className="text-sm text-muted-foreground">Demandé par</label>
                   <input
