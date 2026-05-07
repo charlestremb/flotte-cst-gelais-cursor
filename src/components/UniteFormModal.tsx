@@ -9,6 +9,8 @@ type Props = {
   unite?: Unite | null;
 };
 
+const TYPES_MESURE = ["Laser", "Égout", "Règle", "Détecteur de métal", "Prisme"];
+
 const CATEGORIES = [
   "Laser",
   "Véhicule",
@@ -53,6 +55,7 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
     utilisateur: unite?.utilisateur ?? "",
     statut: unite?.statut ?? "actif",
     notes: unite?.notes ?? "",
+    type_mesure: unite?.type_mesure ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +92,7 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
         km_actuel: form.km_actuel ? parseInt(form.km_actuel, 10) : null,
         utilisateur: form.utilisateur || null,
         notes: form.notes || null,
+        type_mesure: form.type_mesure || null,
       };
 
       if (isEdit && unite) {
@@ -99,7 +103,7 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
           numero_unite: "", entite: "CSTG", categorie: "", marque: "", modele: "",
           annee: "", numero_serie: "", plaque: "", couleur: "", poids: "", pnvb: "",
           nb_essieux: "", date_acquisition: "", date_disposition: "", prix_achat: "",
-          km_achat: "", km_actuel: "", utilisateur: "", statut: "actif", notes: "",
+          km_achat: "", km_actuel: "", utilisateur: "", statut: "actif", notes: "", type_mesure: "",
         });
       }
       setSaving(false);
@@ -158,6 +162,15 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
             <label className="text-xs text-muted-foreground">Modèle</label>
             <input value={form.modele} onChange={(e) => update("modele", e.target.value)} className={inputCls} />
           </div>
+          {form.categorie === "Laser" && (
+            <div>
+              <label className="text-xs text-muted-foreground">Type d'unité de mesure</label>
+              <select value={form.type_mesure} onChange={(e) => update("type_mesure", e.target.value)} className={inputCls}>
+                <option value="">—</option>
+                {TYPES_MESURE.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label className="text-xs text-muted-foreground">Numéro de série</label>
             <input value={form.numero_serie} onChange={(e) => update("numero_serie", e.target.value)} className={inputCls} />

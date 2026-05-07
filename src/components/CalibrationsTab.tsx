@@ -112,6 +112,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
             <tr className="border-b border-border bg-secondary/50 text-left">
               <th className="px-4 py-3 font-medium text-muted-foreground">Unité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Marque / Modèle</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">Type de mesure</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Utilisateur</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Dernière calibration</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">État</th>
@@ -154,6 +155,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
                   <td className="px-4 py-3 text-muted-foreground">
                     {r.unite.marque} {r.unite.modele}
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.unite.type_mesure ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.unite.utilisateur ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {r.lastDate ? new Date(r.lastDate).toLocaleDateString("fr-CA") : "—"}
@@ -178,7 +180,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                   Aucun laser trouvé
                 </td>
               </tr>
