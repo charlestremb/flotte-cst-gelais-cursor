@@ -18,7 +18,10 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
   const [filtre, setFiltre] = useState<"all" | "ok" | "expiree" | "jamais">("all");
 
   const lasers = useMemo(
-    () => unites.filter((u) => u.categorie === "Laser").sort((a, b) => a.numero_unite.localeCompare(b.numero_unite)),
+    () =>
+      unites
+        .filter((u) => u.categorie === "Laser" && u.statut !== "vendu" && u.statut !== "archive")
+        .sort((a, b) => a.numero_unite.localeCompare(b.numero_unite)),
     [unites]
   );
 
