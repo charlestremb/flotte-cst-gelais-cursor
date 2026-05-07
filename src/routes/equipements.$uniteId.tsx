@@ -489,15 +489,15 @@ function UniteDetailPage() {
                 {inspections.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
                 ) : (
-                  <div className="overflow-x-auto rounded-lg border border-border">
-                    <table className="w-full text-xs">
+                  <div className="rounded-lg border border-border">
+                    <table className="w-full table-fixed text-xs">
                       <thead>
                         <tr className="border-b border-border bg-secondary/40 text-left">
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Date</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Résultat</th>
+                          <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Date</th>
+                          <th className="w-28 px-3 py-2 font-medium text-muted-foreground">Type</th>
+                          <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Résultat</th>
                           <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                          <th className="w-14 px-3 py-2 font-medium text-muted-foreground">PDF</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -506,7 +506,7 @@ function UniteDetailPage() {
                             <td className="px-3 py-2 text-muted-foreground">{fmt(i.date_inspection)}</td>
                             <td className="px-3 py-2">{i.type_inspection}</td>
                             <td className="px-3 py-2"><ResultatBadge resultat={i.resultat} /></td>
-                            <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{i.notes_inspection ?? "—"}</td>
+                            <td className="px-3 py-2 text-muted-foreground truncate">{i.notes_inspection ?? "—"}</td>
                             <td className="px-3 py-2">
                               {i.document_url ? (
                                 <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
