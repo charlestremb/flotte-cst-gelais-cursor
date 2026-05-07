@@ -233,11 +233,10 @@ function EquipementsPage() {
             <option value="archive">Archivé</option>
           </select>
         </div>
-      </div>
 
-      {/* Barre d'actions groupées */}
-      {selected.size > 0 && (
-        <div className="sticky top-0 z-20 mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3 shadow-md backdrop-blur-sm">
+        {/* Barre d'actions groupées */}
+        {selected.size > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
           <span className="text-sm font-medium text-foreground">
             {selected.size} unité{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}
           </span>
@@ -295,7 +294,8 @@ function EquipementsPage() {
             </button>
           </div>
         </div>
-      )}
+        )}
+      </div>
 
       {/* Tableau */}
       <div className="mt-5 rounded-xl border border-border">
