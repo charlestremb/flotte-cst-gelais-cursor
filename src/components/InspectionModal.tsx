@@ -45,13 +45,17 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
     if (!uniteId || !type) return;
     setSaving(true);
 
+    const selectedUniteForUpload = unites.find((u) => u.id === uniteId);
+    const isCalibrationForUpload = selectedUniteForUpload?.categorie === "Laser";
+    const bucket = isCalibrationForUpload ? "documents-calibration" : "documents-inspection";
+
     let documentUrl: string | null = null;
     if (pdfFile) {
       setUploading(true);
       const ext = pdfFile.name.split(".").pop() ?? "pdf";
       const path = `${uniteId}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
-        .from("documents-inspection")
+        .from(bucket)
         .upload(path, pdfFile, { contentType: pdfFile.type || "application/pdf" });
       setUploading(false);
       if (upErr) {
@@ -59,7 +63,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
         setSaving(false);
         return;
       }
-      const { data: pub } = supabase.storage.from("documents-inspection").getPublicUrl(path);
+      const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
       documentUrl = pub.publicUrl;
     }
 
