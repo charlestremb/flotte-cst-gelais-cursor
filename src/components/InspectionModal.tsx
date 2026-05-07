@@ -169,7 +169,7 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={isCalibration ? "" : "grid grid-cols-2 gap-3"}>
             <div>
               <label className="text-sm text-muted-foreground">
                 {isCalibration ? "Date de calibration" : "Réception de la lettre"}
@@ -189,17 +189,17 @@ export function InspectionModal({ open, onClose, onCreated, unites, preselectedU
                 className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground">
-                {isCalibration ? "Date d'échéance" : "Date limite"}
-              </label>
-              <input
-                type="date"
-                value={dateLimite}
-                onChange={(e) => setDateLimite(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-            </div>
+            {!isCalibration && (
+              <div>
+                <label className="text-sm text-muted-foreground">Date limite</label>
+                <input
+                  type="date"
+                  value={dateLimite}
+                  onChange={(e) => setDateLimite(e.target.value)}
+                  className="mt-1 block w-full rounded-lg border border-input bg-secondary px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+            )}
           </div>
 
           <div>
