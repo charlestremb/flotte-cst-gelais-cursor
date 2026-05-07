@@ -91,10 +91,17 @@ export const createInspection = createServerFn({ method: "POST" })
     }) => data
   )
   .handler(async ({ data }) => {
+    const { data: unite } = await supabaseAdmin
+      .from("unites")
+      .select("numero_unite")
+      .eq("id", data.unite_id)
+      .single();
+
     const { data: inserted, error } = await supabaseAdmin
       .from("inspections")
       .insert({
         unite_id: data.unite_id,
+        numero_unite: unite?.numero_unite ?? null,
         type_inspection: data.type_inspection,
         date_reception_lettre: data.date_reception_lettre ?? null,
         date_limite: data.date_limite ?? null,
