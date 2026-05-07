@@ -109,7 +109,7 @@ export const createInspection = createServerFn({ method: "POST" })
         effectuee_par: data.effectuee_par ?? null,
         document_url: data.document_url ?? null,
         statut_workflow: "a_planifier",
-        resultat: "En attente",
+        resultat: data.type_inspection === "Calibration" ? "Conforme" : "En attente",
       })
       .select("*, unite:unites(numero_unite, marque, modele, entite)")
       .single();

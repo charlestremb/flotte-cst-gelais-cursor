@@ -34,6 +34,19 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
     return m;
   }, [calibrations]);
 
+  // Dernier document disponible par unité (même sans date d'inspection)
+  const lastDocByUnite = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of calibrations) {
+      if (!c.document_url) continue;
+      const prev = m.get(c.unite_id);
+      if (!prev) {
+        m.set(c.unite_id, c.document_url);
+      }
+    }
+    return m;
+  }, [calibrations]);
+
   const oneYearAgo = useMemo(() => {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 1);
@@ -143,9 +156,9 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
                   </td>
                   <td className="px-4 py-3">{badge}</td>
                   <td className="px-4 py-3">
-                    {r.last?.document_url ? (
+                    {lastDocByUnite.get(r.unite.id) ? (
                       <a
-                        href={r.last.document_url}
+                        href={lastDocByUnite.get(r.unite.id)!}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
