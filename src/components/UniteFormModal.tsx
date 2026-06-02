@@ -21,7 +21,7 @@ const CATEGORIES = [
   "Petites machineries",
   "Camion",
   "Remorque camion",
-  "Tamiseur Paveuse",
+  "Tamiseur",
   "Paveuse",
   "Concasseur",
   "Plate-forme élévatrice",
