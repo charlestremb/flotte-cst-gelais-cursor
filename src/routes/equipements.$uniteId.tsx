@@ -5,7 +5,10 @@ import { getInspectionsForUnite, updateInspection, deleteInspection } from "@/li
 import type { Inspection } from "@/lib/inspections.functions";
 import { getDocumentsVehicule, deleteDocumentVehicule } from "@/lib/documents.functions";
 import type { DocumentVehicule } from "@/lib/documents.functions";
+import { getCertificatsForUnite, deleteCertificat } from "@/lib/certificats.functions";
+import type { CertificatMecanique } from "@/lib/certificats.functions";
 import { DocumentVehiculeModal } from "@/components/DocumentVehiculeModal";
+import { CertificatMecaniqueModal } from "@/components/CertificatMecaniqueModal";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
@@ -20,13 +23,14 @@ export const Route = createFileRoute("/equipements/$uniteId")({
     from: typeof search.from === "string" ? search.from : undefined,
   }),
   loader: async ({ params }) => {
-    const [unite, inspections, allUnites, documents] = await Promise.all([
+    const [unite, inspections, allUnites, documents, certificats] = await Promise.all([
       getUnite({ data: { id: params.uniteId } }),
       getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
       getUnites(),
       getDocumentsVehicule({ data: { uniteId: params.uniteId } }),
+      getCertificatsForUnite({ data: { uniteId: params.uniteId } }),
     ]);
-    return { unite, inspections, allUnites, documents };
+    return { unite, inspections, allUnites, documents, certificats };
   },
   component: UniteDetailPage,
   notFoundComponent: () => (
@@ -94,8 +98,8 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[] };
-  const { unite, inspections, allUnites, documents } = data;
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[]; certificats: CertificatMecanique[] };
+  const { unite, inspections, allUnites, documents, certificats } = data;
   const router = useRouter();
   const { isAdmin } = useAuth();
   const { from } = Route.useSearch();
@@ -111,6 +115,7 @@ function UniteDetailPage() {
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showCertificatModal, setShowCertificatModal] = useState(false);
 
   const handleSaveUtilisateur = async () => {
     setSavingUser(true);
@@ -562,6 +567,75 @@ function UniteDetailPage() {
         </Section>
 
 
+        {/* Section - Certificats de vérification mécanique */}
+        <Section title="Certificats de vérification mécanique">
+          {certificats.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aucun certificat enregistré.</p>
+          ) : (
+            <div className="rounded-lg border border-border">
+              <table className="w-full table-fixed text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/40 text-left">
+                    <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Date</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Effectuée par</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
+                    <th className="w-14 px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                    {isAdmin && <th className="w-8 px-2 py-2" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {certificats.map((c) => (
+                    <tr key={c.id} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {new Date(c.date_certificat + "T00:00:00").toLocaleDateString("fr-CA")}
+                      </td>
+                      <td className="px-3 py-2">{c.effectuee_par ?? "—"}</td>
+                      <td className="px-3 py-2 text-muted-foreground truncate">{c.notes ?? "—"}</td>
+                      <td className="px-3 py-2">
+                        {c.document_url ? (
+                          <a
+                            href={c.document_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:underline"
+                          >
+                            <FileText className="h-3.5 w-3.5" /> Voir
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      {isAdmin && (
+                        <td className="px-2 py-2 text-right">
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Supprimer ce certificat ?")) return;
+                              await deleteCertificat({ data: { id: c.id } });
+                              router.invalidate();
+                            }}
+                            title="Supprimer le certificat"
+                            className="text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowCertificatModal(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Ajouter un certificat
+          </button>
+        </Section>
+
         {/* Section 6 - Notes */}
         <Section title="Notes">
           <textarea
@@ -675,6 +749,13 @@ function UniteDetailPage() {
       <DocumentVehiculeModal
         open={showDocumentModal}
         onClose={() => setShowDocumentModal(false)}
+        onCreated={() => router.invalidate()}
+        uniteId={unite.id}
+      />
+
+      <CertificatMecaniqueModal
+        open={showCertificatModal}
+        onClose={() => setShowCertificatModal(false)}
         onCreated={() => router.invalidate()}
         uniteId={unite.id}
       />
