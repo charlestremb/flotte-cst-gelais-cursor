@@ -5,6 +5,7 @@ import { getInspections, TYPES_INSPECTION, deleteInspection } from "@/lib/inspec
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
 import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { getEntites } from "@/lib/entites.functions";
 import { AlertDot, WorkflowBadge, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
 import { PlanifierModal, TerminerModal } from "@/components/PlanifierModal";
@@ -18,14 +19,14 @@ export const Route = createFileRoute("/inspections")({
     tab: search.tab === "calibrations" ? "calibrations" : undefined,
   }),
   loader: async () => {
-    const [inspections, unites] = await Promise.all([getInspections(), getUnites()]);
-    return { inspections, unites };
+    const [inspections, unites, entites] = await Promise.all([getInspections(), getUnites(), getEntites()]);
+    return { inspections, unites, entites };
   },
   component: InspectionsPage,
 });
 
 function InspectionsPage() {
-  const data = Route.useLoaderData() as { inspections: InspectionWithUnite[]; unites: Unite[] };
+  const data = Route.useLoaderData() as { inspections: InspectionWithUnite[]; unites: Unite[]; entites: { nom: string }[] };
   const router = useRouter();
   const navigate = useNavigate({ from: "/inspections" });
   const { isAdmin } = useAuth();
@@ -35,6 +36,7 @@ function InspectionsPage() {
   const setTab = (t: Tab) => {
     navigate({ search: t === "calibrations" ? { tab: "calibrations" } : {}, replace: true });
   };
+  const entiteNoms = data.entites.map((e) => e.nom);
   const [search, setSearch] = useState("");
   const [entite, setEntite] = useState("all");
   const [type, setType] = useState("all");
@@ -133,8 +135,9 @@ function InspectionsPage() {
               className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="all">Toutes les entités</option>
-              <option value="CSTG">CSTG</option>
-              <option value="9487-6216">9487-6216</option>
+              {entiteNoms.map((nom) => (
+                <option key={nom} value={nom}>{nom}</option>
+              ))}
             </select>
             <select
               value={type}

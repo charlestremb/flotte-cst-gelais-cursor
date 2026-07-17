@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { getEntites } from "@/lib/entites.functions";
+import type { Entite } from "@/lib/entites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
@@ -20,12 +22,16 @@ const STATUT_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export const Route = createFileRoute("/equipements/")({
-  loader: () => getUnites(),
+  loader: async () => {
+    const [unites, entites] = await Promise.all([getUnites(), getEntites()]);
+    return { unites, entites };
+  },
   component: EquipementsPage,
 });
 
 function EquipementsPage() {
-  const unites = Route.useLoaderData() as Unite[];
+  const { unites, entites } = Route.useLoaderData() as { unites: Unite[]; entites: Entite[] };
+  const entiteNoms = entites.map((e) => e.nom);
   const router = useRouter();
   const { isAdmin } = useAuth();
   const [search, setSearch] = useState("");
@@ -203,8 +209,9 @@ function EquipementsPage() {
             className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">Toutes les entités</option>
-            <option value="CSTG">CSTG</option>
-            <option value="9487-6216">9487-6216</option>
+            {entiteNoms.map((nom) => (
+              <option key={nom} value={nom}>{nom}</option>
+            ))}
           </select>
           <select
             value={categorie}
@@ -428,6 +435,7 @@ function EquipementsPage() {
           setShowAdd(false);
           router.invalidate();
         }}
+        entites={entiteNoms}
       />
 
       {confirmDelete && (

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { getEntites } from "@/lib/entites.functions";
 import { getInspectionsForUnite, updateInspection, deleteInspection } from "@/lib/inspections.functions";
 import type { Inspection } from "@/lib/inspections.functions";
 import { getDocumentsVehicule, deleteDocumentVehicule } from "@/lib/documents.functions";
@@ -23,14 +24,15 @@ export const Route = createFileRoute("/equipements/$uniteId")({
     from: typeof search.from === "string" ? search.from : undefined,
   }),
   loader: async ({ params }) => {
-    const [unite, inspections, allUnites, documents, certificats] = await Promise.all([
+    const [unite, inspections, allUnites, documents, certificats, entites] = await Promise.all([
       getUnite({ data: { id: params.uniteId } }),
       getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
       getUnites(),
       getDocumentsVehicule({ data: { uniteId: params.uniteId } }),
       getCertificatsForUnite({ data: { uniteId: params.uniteId } }),
+      getEntites(),
     ]);
-    return { unite, inspections, allUnites, documents, certificats };
+    return { unite, inspections, allUnites, documents, certificats, entites };
   },
   component: UniteDetailPage,
   notFoundComponent: () => (
@@ -98,8 +100,9 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[]; certificats: CertificatMecanique[] };
-  const { unite, inspections, allUnites, documents, certificats } = data;
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[]; certificats: CertificatMecanique[]; entites: { id: string; nom: string; created_at: string }[] };
+  const { unite, inspections, allUnites, documents, certificats, entites } = data;
+  const entiteNoms = entites.map((e) => e.nom);
   const router = useRouter();
   const { isAdmin } = useAuth();
   const { from } = Route.useSearch();
@@ -743,6 +746,7 @@ function UniteDetailPage() {
             setShowEditModal(false);
             router.invalidate();
           }}
+          entites={entiteNoms}
         />
       )}
 

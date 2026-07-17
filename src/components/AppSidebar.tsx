@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  Building2,
   LogOut,
   Shield,
   User as UserIcon,
@@ -30,7 +31,11 @@ export function AppSidebar() {
   const { user, isAdmin, signOut } = useAuth();
 
   const navItems = isAdmin
-    ? [...baseNavItems, { to: "/admin/utilisateurs", label: "Utilisateurs", icon: Users } as const]
+    ? [
+        ...baseNavItems,
+        { to: "/admin/utilisateurs", label: "Utilisateurs", icon: Users } as const,
+        { to: "/admin/entites", label: "Entités", icon: Building2 } as const,
+      ]
     : baseNavItems;
 
   return (

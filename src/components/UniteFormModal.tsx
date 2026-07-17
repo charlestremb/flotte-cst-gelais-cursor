@@ -7,6 +7,7 @@ type Props = {
   onClose: () => void;
   onCreated: () => void;
   unite?: Unite | null;
+  entites?: string[];
 };
 
 const TYPES_MESURE = ["Laser", "Égout", "Règle", "Détecteur de métal", "Prisme"];
@@ -32,11 +33,11 @@ const CATEGORIES = [
   "Autre",
 ];
 
-export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
+export function UniteFormModal({ open, onClose, onCreated, unite, entites = ["CSTG", "9487-6216"] }: Props) {
   const isEdit = !!unite;
   const [form, setForm] = useState({
     numero_unite: unite?.numero_unite ?? "",
-    entite: unite?.entite ?? "CSTG",
+    entite: unite?.entite ?? (entites[0] ?? ""),
     categorie: unite?.categorie ?? "",
     marque: unite?.marque ?? "",
     modele: unite?.modele ?? "",
@@ -100,7 +101,7 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
       } else {
         await createUnite({ data: { ...payload, statut: form.statut || "actif" } });
         setForm({
-          numero_unite: "", entite: "CSTG", categorie: "", marque: "", modele: "",
+          numero_unite: "", entite: entites[0] ?? "", categorie: "", marque: "", modele: "",
           annee: "", numero_serie: "", plaque: "", couleur: "", poids: "", pnvb: "",
           nb_essieux: "", date_acquisition: "", date_disposition: "", prix_achat: "",
           km_achat: "", km_actuel: "", utilisateur: "", statut: "actif", notes: "", type_mesure: "",
@@ -139,8 +140,9 @@ export function UniteFormModal({ open, onClose, onCreated, unite }: Props) {
           <div>
             <label className="text-xs text-muted-foreground">Entité *</label>
             <select value={form.entite} onChange={(e) => update("entite", e.target.value)} className={inputCls}>
-              <option value="CSTG">CSTG</option>
-              <option value="9487-6216">9487-6216</option>
+              {entites.map((e) => (
+                <option key={e} value={e}>{e}</option>
+              ))}
             </select>
           </div>
           <div>

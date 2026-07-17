@@ -3,6 +3,7 @@ import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { getInspections } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
+import { getEntites } from "@/lib/entites.functions";
 import {
   Truck,
   ParkingSquare,
@@ -15,8 +16,8 @@ import {
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [unites, inspections] = await Promise.all([getUnites(), getInspections()]);
-    return { unites, inspections };
+    const [unites, inspections, entites] = await Promise.all([getUnites(), getInspections(), getEntites()]);
+    return { unites, inspections, entites };
   },
   component: DashboardPage,
 });
@@ -110,10 +111,12 @@ function AlertList({
 }
 
 function DashboardPage() {
-  const { unites, inspections } = Route.useLoaderData() as {
+  const { unites, inspections, entites: entitesData } = Route.useLoaderData() as {
     unites: Unite[];
     inspections: InspectionWithUnite[];
+    entites: { nom: string }[];
   };
+  const entites = entitesData.map((e) => e.nom);
 
   const actifs = unites.filter((u) => u.statut === "actif");
   const remises = unites.filter((u) => u.statut === "remise");
@@ -163,7 +166,6 @@ function DashboardPage() {
     }));
 
   const totalAlerts = assurancesAlerts.length + immatAlerts.length + inspectionsRetard.length;
-  const entites = ["CSTG", "T1C", "9487-6216"] as const;
 
   return (
     <div>
