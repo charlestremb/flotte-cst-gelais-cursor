@@ -9,35 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RemisageRouteImport } from './routes/remisage'
-import { Route as InspectionsRouteImport } from './routes/inspections'
-import { Route as EquipementsRouteImport } from './routes/equipements'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ArchivesRouteImport } from './routes/archives'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArchivesRouteImport } from './routes/archives'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as EquipementsRouteImport } from './routes/equipements'
+import { Route as InspectionsRouteImport } from './routes/inspections'
+import { Route as RemisageRouteImport } from './routes/remisage'
+import { Route as AdminEntitesRouteImport } from './routes/admin.entites'
+import { Route as AdminUtilisateursRouteImport } from './routes/admin.utilisateurs'
 import { Route as EquipementsIndexRouteImport } from './routes/equipements.index'
 import { Route as EquipementsUniteIdRouteImport } from './routes/equipements.$uniteId'
-import { Route as AdminUtilisateursRouteImport } from './routes/admin.utilisateurs'
-import { Route as AdminEntitesRouteImport } from './routes/admin.entites'
 
-const RemisageRoute = RemisageRouteImport.update({
-  id: '/remisage',
-  path: '/remisage',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InspectionsRoute = InspectionsRouteImport.update({
-  id: '/inspections',
-  path: '/inspections',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EquipementsRoute = EquipementsRouteImport.update({
-  id: '/equipements',
-  path: '/equipements',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArchivesRoute = ArchivesRouteImport.update({
@@ -45,9 +30,34 @@ const ArchivesRoute = ArchivesRouteImport.update({
   path: '/archives',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipementsRoute = EquipementsRouteImport.update({
+  id: '/equipements',
+  path: '/equipements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsRoute = InspectionsRouteImport.update({
+  id: '/inspections',
+  path: '/inspections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RemisageRoute = RemisageRouteImport.update({
+  id: '/remisage',
+  path: '/remisage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEntitesRoute = AdminEntitesRouteImport.update({
+  id: '/admin/entites',
+  path: '/admin/entites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUtilisateursRoute = AdminUtilisateursRouteImport.update({
+  id: '/admin/utilisateurs',
+  path: '/admin/utilisateurs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EquipementsIndexRoute = EquipementsIndexRouteImport.update({
@@ -59,16 +69,6 @@ const EquipementsUniteIdRoute = EquipementsUniteIdRouteImport.update({
   id: '/$uniteId',
   path: '/$uniteId',
   getParentRoute: () => EquipementsRoute,
-} as any)
-const AdminUtilisateursRoute = AdminUtilisateursRouteImport.update({
-  id: '/admin/utilisateurs',
-  path: '/admin/utilisateurs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminEntitesRoute = AdminEntitesRouteImport.update({
-  id: '/admin/entites',
-  path: '/admin/entites',
-  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -158,32 +158,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/remisage': {
-      id: '/remisage'
-      path: '/remisage'
-      fullPath: '/remisage'
-      preLoaderRoute: typeof RemisageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inspections': {
-      id: '/inspections'
-      path: '/inspections'
-      fullPath: '/inspections'
-      preLoaderRoute: typeof InspectionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/equipements': {
-      id: '/equipements'
-      path: '/equipements'
-      fullPath: '/equipements'
-      preLoaderRoute: typeof EquipementsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/archives': {
@@ -193,11 +172,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArchivesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipements': {
+      id: '/equipements'
+      path: '/equipements'
+      fullPath: '/equipements'
+      preLoaderRoute: typeof EquipementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections': {
+      id: '/inspections'
+      path: '/inspections'
+      fullPath: '/inspections'
+      preLoaderRoute: typeof InspectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/remisage': {
+      id: '/remisage'
+      path: '/remisage'
+      fullPath: '/remisage'
+      preLoaderRoute: typeof RemisageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/entites': {
+      id: '/admin/entites'
+      path: '/admin/entites'
+      fullPath: '/admin/entites'
+      preLoaderRoute: typeof AdminEntitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/utilisateurs': {
+      id: '/admin/utilisateurs'
+      path: '/admin/utilisateurs'
+      fullPath: '/admin/utilisateurs'
+      preLoaderRoute: typeof AdminUtilisateursRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/equipements/': {
@@ -213,20 +227,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/equipements/$uniteId'
       preLoaderRoute: typeof EquipementsUniteIdRouteImport
       parentRoute: typeof EquipementsRoute
-    }
-    '/admin/utilisateurs': {
-      id: '/admin/utilisateurs'
-      path: '/admin/utilisateurs'
-      fullPath: '/admin/utilisateurs'
-      preLoaderRoute: typeof AdminUtilisateursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/entites': {
-      id: '/admin/entites'
-      path: '/admin/entites'
-      fullPath: '/admin/entites'
-      preLoaderRoute: typeof AdminEntitesRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
