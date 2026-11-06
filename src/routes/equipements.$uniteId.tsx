@@ -95,7 +95,14 @@ function UniteDetailPage() {
   const [utilisateur, setUtilisateur] = useState(unite.utilisateur ?? "");
   const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | null>(null);
+  const [showModal, setShowModal] = useState<
+    "remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | "a_assurer" | "a_immatriculer" | null
+  >(null);
+  const isMarkModal =
+    showModal === "a_remiser" ||
+    showModal === "a_deremiser" ||
+    showModal === "a_assurer" ||
+    showModal === "a_immatriculer";
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
@@ -134,6 +141,9 @@ function UniteDetailPage() {
       updates.demande_par = modalDemandePar;
     } else if (showModal === "a_deremiser") {
       updates.statut = "a_deremiser";
+      updates.demande_par = modalDemandePar;
+    } else if (showModal === "a_assurer" || showModal === "a_immatriculer") {
+      updates.statut = showModal;
       updates.demande_par = modalDemandePar;
     }
 
@@ -281,6 +291,44 @@ function UniteDetailPage() {
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Confirmer le déremisage
+              </button>
+            )}
+            {unite.statut === "a_assurer" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Confirmer l'assurance
+              </button>
+            )}
+            {unite.statut === "a_immatriculer" && (
+              <button
+                onClick={async () => {
+                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
+                  router.invalidate();
+                }}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Confirmer l'immatriculation
+              </button>
+            )}
+            {unite.statut !== "vendu" && unite.statut !== "a_assurer" && (
+              <button
+                onClick={() => setShowModal("a_assurer")}
+                className="rounded-lg bg-assurance/15 border border-assurance/30 px-3 py-1.5 text-sm font-medium text-assurance hover:bg-assurance/25 transition-colors"
+              >
+                Marquer à assurer
+              </button>
+            )}
+            {unite.statut !== "vendu" && unite.statut !== "a_immatriculer" && (
+              <button
+                onClick={() => setShowModal("a_immatriculer")}
+                className="rounded-lg bg-immatriculation/15 border border-immatriculation/30 px-3 py-1.5 text-sm font-medium text-immatriculation hover:bg-immatriculation/25 transition-colors"
+              >
+                Marquer à immatriculer
               </button>
             )}
             {unite.statut !== "brise" && unite.statut !== "vendu" && (
@@ -461,10 +509,14 @@ function UniteDetailPage() {
                     ? "Marquer à remiser"
                     : showModal === "a_deremiser"
                       ? "Marquer à déremiser"
-                      : "Marquer comme vendu"}
+                      : showModal === "a_assurer"
+                        ? "Marquer à assurer"
+                        : showModal === "a_immatriculer"
+                          ? "Marquer à immatriculer"
+                          : "Marquer comme vendu"}
             </h3>
             <div className="space-y-3">
-              {showModal !== "a_remiser" && showModal !== "a_deremiser" && (
+              {!isMarkModal && (
                 <div>
                   <label className="text-sm text-muted-foreground">Date</label>
                   <input

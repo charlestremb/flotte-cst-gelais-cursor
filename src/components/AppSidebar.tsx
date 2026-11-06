@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Truck,
-  ParkingSquare,
+  ListTodo,
   ClipboardCheck,
   Archive,
   ChevronLeft,
@@ -19,7 +19,7 @@ import logoStGelais from "@/assets/logo-st-gelais.jpg";
 const baseNavItems = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/equipements", label: "Équipements", icon: Truck },
-  { to: "/remisage", label: "Remisage", icon: ParkingSquare },
+  { to: "/remisage", label: "Actions à faire", icon: ListTodo },
   { to: "/inspections", label: "Inspections", icon: ClipboardCheck },
   { to: "/archives", label: "Archives", icon: Archive },
 ] as const;

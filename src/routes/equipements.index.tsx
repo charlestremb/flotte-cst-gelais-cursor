@@ -6,16 +6,7 @@ import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
-
-const STATUT_OPTIONS: { value: string; label: string }[] = [
-  { value: "actif", label: "Actif" },
-  { value: "brise", label: "Brisé" },
-  { value: "hors_usage", label: "Hors d'usage" },
-  { value: "remise", label: "Remisé" },
-  { value: "a_remiser", label: "À remiser" },
-  { value: "a_deremiser", label: "À déremiser" },
-  { value: "vendu", label: "Vendu" },
-];
+import { STATUT_OPTIONS } from "@/lib/statuts";
 
 export const Route = createFileRoute("/equipements/")({
   loader: () => getUnites(),
@@ -219,13 +210,9 @@ function EquipementsPage() {
             className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">Tous les statuts</option>
-            <option value="actif">Actif</option>
-            <option value="brise">Brisé</option>
-            <option value="hors_usage">Hors d'usage</option>
-            <option value="remise">Remisé</option>
-            <option value="a_remiser">À remiser</option>
-            <option value="a_deremiser">À déremiser</option>
-            <option value="vendu">Vendu</option>
+            {STATUT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
           </select>
         </div>
       </div>

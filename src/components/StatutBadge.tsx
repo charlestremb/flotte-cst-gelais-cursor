@@ -16,6 +16,14 @@ export function StatutBadge({ statut }: { statut: string }) {
       label: "À déremiser",
       className: "bg-primary/15 text-primary border-primary/30",
     },
+    a_assurer: {
+      label: "À assurer",
+      className: "bg-assurance/15 text-assurance border-assurance/30",
+    },
+    a_immatriculer: {
+      label: "À immatriculer",
+      className: "bg-immatriculation/15 text-immatriculation border-immatriculation/30",
+    },
     vendu: {
       label: "Vendu",
       className: "bg-muted text-muted-foreground border-muted-foreground/30",

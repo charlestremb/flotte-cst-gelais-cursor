@@ -3,6 +3,7 @@ import { getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
 import { getInspections } from "@/lib/inspections.functions";
 import type { InspectionWithUnite } from "@/lib/inspections.functions";
+import { isActionStatut } from "@/lib/statuts";
 import {
   Truck,
   ParkingSquare,
@@ -117,7 +118,7 @@ function DashboardPage() {
 
   const actifs = unites.filter((u) => u.statut === "actif");
   const remises = unites.filter((u) => u.statut === "remise");
-  const aRemiser = unites.filter((u) => u.statut === "a_remiser" || u.statut === "a_deremiser");
+  const aRemiser = unites.filter((u) => isActionStatut(u.statut));
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -173,7 +174,7 @@ function DashboardPage() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Unités actives" value={actifs.length} icon={Truck} subtitle={`sur ${unites.length} au total`} />
         <StatCard title="Unités remisées" value={remises.length} icon={ParkingSquare} />
-        <StatCard title="À remiser / déremiser" value={aRemiser.length} icon={AlertTriangle} variant="warning" />
+        <StatCard title="Actions à faire" value={aRemiser.length} icon={AlertTriangle} variant="warning" />
         <StatCard title="Alertes critiques" value={totalAlerts} icon={ShieldAlert} variant="danger" />
       </div>
 

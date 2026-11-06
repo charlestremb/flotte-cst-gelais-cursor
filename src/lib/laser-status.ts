@@ -1,5 +1,6 @@
 import type { Unite } from "@/lib/unites.functions";
 import type { Inspection } from "@/lib/inspections.functions";
+import { isActionStatut } from "@/lib/statuts";
 
 /**
  * Pour un laser, retourne "hors_usage" si la dernière calibration
@@ -16,8 +17,7 @@ export function getEffectiveStatut(
     unite.statut === "hors_usage" ||
     unite.statut === "vendu" ||
     unite.statut === "remise" ||
-    unite.statut === "a_remiser" ||
-    unite.statut === "a_deremiser"
+    isActionStatut(unite.statut)
   ) {
     return unite.statut;
   }
