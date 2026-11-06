@@ -53,6 +53,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-assurance: var(--assurance);
+  --color-immatriculation: var(--immatriculation);
   --font-sans: "DM Sans", system-ui, sans-serif;
 }
 
@@ -81,6 +83,8 @@
   --warning-foreground: oklch(0.2 0.02 80);
   --success: oklch(0.5 0.18 145);
   --success-foreground: oklch(1 0 0);
+  --assurance: oklch(0.6 0.15 245);
+  --immatriculation: oklch(0.6 0.18 300);
   --chart-1: oklch(0.78 0.17 80);
   --chart-2: oklch(0.55 0.15 180);
   --chart-3: oklch(0.5 0.1 260);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { STATUT_OPTIONS } from "@/lib/statuts";
 
 type Props = {
   open: boolean;
@@ -224,15 +225,9 @@ export function UniteFormModal({ open, onClose, onCreated, unite, entites = ["CS
           <div>
             <label className="text-xs text-muted-foreground">Statut</label>
             <select value={form.statut} onChange={(e) => update("statut", e.target.value)} className={inputCls}>
-              <option value="actif">Actif</option>
-              <option value="brise">Brisé</option>
-              <option value="hors_usage">Hors d'usage</option>
-              <option value="remise">Remisé</option>
-              <option value="a_remiser">À remiser</option>
-              <option value="a_deremiser">À déremiser</option>
-              <option value="interdit_circuler">Interdit de circuler</option>
-              <option value="vendu">Vendu</option>
-              <option value="archive">Archivé</option>
+              {STATUT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
           <div className="col-span-2">

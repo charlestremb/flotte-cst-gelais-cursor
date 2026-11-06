@@ -112,7 +112,23 @@ function UniteDetailPage() {
   const [utilisateur, setUtilisateur] = useState(unite.utilisateur ?? "");
   const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState<"remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | "brise" | "reparer" | "interdit_circuler" | "lever_interdiction" | "archive" | null>(null);
+  const [showModal, setShowModal] = useState<
+    | "remiser"
+    | "deremiser"
+    | "vendu"
+    | "a_remiser"
+    | "a_deremiser"
+    | "a_assurer"
+    | "a_immatriculer"
+    | "assure"
+    | "immatricule"
+    | "brise"
+    | "reparer"
+    | "interdit_circuler"
+    | "lever_interdiction"
+    | "archive"
+    | null
+  >(null);
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
@@ -154,6 +170,11 @@ function UniteDetailPage() {
     } else if (showModal === "a_deremiser") {
       updates.statut = "a_deremiser";
       updates.demande_par = modalDemandePar;
+    } else if (showModal === "a_assurer" || showModal === "a_immatriculer") {
+      updates.statut = showModal;
+      updates.demande_par = modalDemandePar;
+    } else if (showModal === "assure" || showModal === "immatricule") {
+      updates.statut = "actif";
     } else if (showModal === "brise") {
       updates.statut = "brise";
     } else if (showModal === "reparer") {
@@ -321,6 +342,38 @@ function UniteDetailPage() {
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Confirmer le déremisage
+              </button>
+            )}
+            {unite.statut === "a_assurer" && (
+              <button
+                onClick={() => setShowModal("assure")}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Confirmer l'assurance
+              </button>
+            )}
+            {unite.statut === "a_immatriculer" && (
+              <button
+                onClick={() => setShowModal("immatricule")}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Confirmer l'immatriculation
+              </button>
+            )}
+            {unite.statut !== "vendu" && unite.statut !== "archive" && unite.statut !== "a_assurer" && (
+              <button
+                onClick={() => setShowModal("a_assurer")}
+                className="rounded-lg bg-assurance/15 border border-assurance/30 px-3 py-1.5 text-sm font-medium text-assurance hover:bg-assurance/25 transition-colors"
+              >
+                Marquer à assurer
+              </button>
+            )}
+            {unite.statut !== "vendu" && unite.statut !== "archive" && unite.statut !== "a_immatriculer" && (
+              <button
+                onClick={() => setShowModal("a_immatriculer")}
+                className="rounded-lg bg-immatriculation/15 border border-immatriculation/30 px-3 py-1.5 text-sm font-medium text-immatriculation hover:bg-immatriculation/25 transition-colors"
+              >
+                Marquer à immatriculer
               </button>
             )}
             {unite.statut !== "brise" && unite.statut !== "vendu" && (
@@ -668,6 +721,10 @@ function UniteDetailPage() {
                 : showModal === "deremiser" ? "Déremiser l'unité"
                 : showModal === "a_remiser" ? "Marquer à remiser"
                 : showModal === "a_deremiser" ? "Marquer à déremiser"
+                : showModal === "a_assurer" ? "Marquer à assurer"
+                : showModal === "a_immatriculer" ? "Marquer à immatriculer"
+                : showModal === "assure" ? "Confirmer l'assurance"
+                : showModal === "immatricule" ? "Confirmer l'immatriculation"
                 : showModal === "vendu" ? "Marquer comme vendu"
                 : showModal === "brise" ? "Marquer comme brisé"
                 : showModal === "reparer" ? "Remettre en service"
@@ -690,7 +747,12 @@ function UniteDetailPage() {
                   />
                 </div>
               )}
-              {(showModal === "remiser" || showModal === "deremiser" || showModal === "a_remiser" || showModal === "a_deremiser") && (
+              {(showModal === "remiser" ||
+                showModal === "deremiser" ||
+                showModal === "a_remiser" ||
+                showModal === "a_deremiser" ||
+                showModal === "a_assurer" ||
+                showModal === "a_immatriculer") && (
                 <div>
                   <label className="text-sm text-muted-foreground">Demandé par</label>
                   <input
