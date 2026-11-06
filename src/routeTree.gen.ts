@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as EquipementsIndexRouteImport } from './routes/equipements.index'
 import { Route as EquipementsUniteIdRouteImport } from './routes/equipements.$uniteId'
 import { Route as AdminUtilisateursRouteImport } from './routes/admin.utilisateurs'
+import { Route as AdminEntitesRouteImport } from './routes/admin.entites'
 
 const RemisageRoute = RemisageRouteImport.update({
   id: '/remisage',
@@ -64,6 +65,11 @@ const AdminUtilisateursRoute = AdminUtilisateursRouteImport.update({
   path: '/admin/utilisateurs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEntitesRoute = AdminEntitesRouteImport.update({
+  id: '/admin/entites',
+  path: '/admin/entites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/equipements': typeof EquipementsRouteWithChildren
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/entites': typeof AdminEntitesRoute
   '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements/': typeof EquipementsIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/entites': typeof AdminEntitesRoute
   '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements': typeof EquipementsIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/equipements': typeof EquipementsRouteWithChildren
   '/inspections': typeof InspectionsRoute
   '/remisage': typeof RemisageRoute
+  '/admin/entites': typeof AdminEntitesRoute
   '/admin/utilisateurs': typeof AdminUtilisateursRoute
   '/equipements/$uniteId': typeof EquipementsUniteIdRoute
   '/equipements/': typeof EquipementsIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/equipements'
     | '/inspections'
     | '/remisage'
+    | '/admin/entites'
     | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/inspections'
     | '/remisage'
+    | '/admin/entites'
     | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/equipements'
     | '/inspections'
     | '/remisage'
+    | '/admin/entites'
     | '/admin/utilisateurs'
     | '/equipements/$uniteId'
     | '/equipements/'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   EquipementsRoute: typeof EquipementsRouteWithChildren
   InspectionsRoute: typeof InspectionsRoute
   RemisageRoute: typeof RemisageRoute
+  AdminEntitesRoute: typeof AdminEntitesRoute
   AdminUtilisateursRoute: typeof AdminUtilisateursRoute
 }
 
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUtilisateursRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/entites': {
+      id: '/admin/entites'
+      path: '/admin/entites'
+      fullPath: '/admin/entites'
+      preLoaderRoute: typeof AdminEntitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -232,6 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   EquipementsRoute: EquipementsRouteWithChildren,
   InspectionsRoute: InspectionsRoute,
   RemisageRoute: RemisageRoute,
+  AdminEntitesRoute: AdminEntitesRoute,
   AdminUtilisateursRoute: AdminUtilisateursRoute,
 }
 export const routeTree = rootRouteImport

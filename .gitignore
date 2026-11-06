@@ -21,9 +21,15 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Vercel build output (généré localement, Vercel le génère de son côté)
+.vercel/output/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Supabase CLI temp
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

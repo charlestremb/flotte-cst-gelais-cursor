@@ -28,6 +28,10 @@ export function StatutBadge({ statut }: { statut: string }) {
       label: "Vendu",
       className: "bg-muted text-muted-foreground border-muted-foreground/30",
     },
+    archive: {
+      label: "Archivé",
+      className: "bg-muted text-muted-foreground border-muted-foreground/30",
+    },
     brise: {
       label: "Brisé",
       className: "bg-destructive/15 text-destructive border-destructive/30",
@@ -35,6 +39,10 @@ export function StatutBadge({ statut }: { statut: string }) {
     hors_usage: {
       label: "Hors d'usage",
       className: "bg-destructive/25 text-destructive border-destructive/50",
+    },
+    interdit_circuler: {
+      label: "Interdit\u00A0de circuler",
+      className: "bg-destructive/40 text-destructive border-destructive/70",
     },
   };
 

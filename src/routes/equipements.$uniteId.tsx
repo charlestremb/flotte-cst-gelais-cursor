@@ -1,24 +1,38 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnite, updateUnite, getUnites } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
-import { getInspectionsForUnite } from "@/lib/inspections.functions";
+import { getEntites } from "@/lib/entites.functions";
+import { getInspectionsForUnite, updateInspection, deleteInspection } from "@/lib/inspections.functions";
 import type { Inspection } from "@/lib/inspections.functions";
+import { getDocumentsVehicule, deleteDocumentVehicule } from "@/lib/documents.functions";
+import type { DocumentVehicule } from "@/lib/documents.functions";
+import { getCertificatsForUnite, deleteCertificat } from "@/lib/certificats.functions";
+import type { CertificatMecanique } from "@/lib/certificats.functions";
+import { DocumentVehiculeModal } from "@/components/DocumentVehiculeModal";
+import { CertificatMecaniqueModal } from "@/components/CertificatMecaniqueModal";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AlertDot, ResultatBadge, getInspectionAlertLevel } from "@/components/InspectionAlerts";
 import { InspectionModal } from "@/components/InspectionModal";
 import { UniteFormModal } from "@/components/UniteFormModal";
-import { ArrowLeft, Save, Plus, Printer, FileText, Pencil } from "lucide-react";
+import { ArrowLeft, Save, Plus, Printer, FileText, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { getEffectiveStatut, getLastCalibration } from "@/lib/laser-status";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/equipements/$uniteId")({
+  validateSearch: (search: Record<string, unknown>): { from?: string } => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   loader: async ({ params }) => {
-    const [unite, inspections, allUnites] = await Promise.all([
+    const [unite, inspections, allUnites, documents, certificats, entites] = await Promise.all([
       getUnite({ data: { id: params.uniteId } }),
       getInspectionsForUnite({ data: { uniteId: params.uniteId } }),
       getUnites(),
+      getDocumentsVehicule({ data: { uniteId: params.uniteId } }),
+      getCertificatsForUnite({ data: { uniteId: params.uniteId } }),
+      getEntites(),
     ]);
-    return { unite, inspections, allUnites };
+    return { unite, inspections, allUnites, documents, certificats, entites };
   },
   component: UniteDetailPage,
   notFoundComponent: () => (
@@ -86,9 +100,12 @@ function DateBadge({ date, label }: { date: string | null; label: string }) {
 }
 
 function UniteDetailPage() {
-  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[] };
-  const { unite, inspections, allUnites } = data;
+  const data = Route.useLoaderData() as { unite: Unite; inspections: Inspection[]; allUnites: Unite[]; documents: DocumentVehicule[]; certificats: CertificatMecanique[]; entites: { id: string; nom: string; created_at: string }[] };
+  const { unite, inspections, allUnites, documents, certificats, entites } = data;
+  const entiteNoms = entites.map((e) => e.nom);
   const router = useRouter();
+  const { isAdmin } = useAuth();
+  const { from } = Route.useSearch();
   const lastCalibration = getLastCalibration(inspections);
   const effectiveStatut = getEffectiveStatut(unite, lastCalibration);
   const [notes, setNotes] = useState(unite.notes ?? "");
@@ -96,17 +113,28 @@ function UniteDetailPage() {
   const [savingUser, setSavingUser] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState<
-    "remiser" | "deremiser" | "vendu" | "a_remiser" | "a_deremiser" | "a_assurer" | "a_immatriculer" | null
+    | "remiser"
+    | "deremiser"
+    | "vendu"
+    | "a_remiser"
+    | "a_deremiser"
+    | "a_assurer"
+    | "a_immatriculer"
+    | "assure"
+    | "immatricule"
+    | "brise"
+    | "reparer"
+    | "interdit_circuler"
+    | "lever_interdiction"
+    | "archive"
+    | null
   >(null);
-  const isMarkModal =
-    showModal === "a_remiser" ||
-    showModal === "a_deremiser" ||
-    showModal === "a_assurer" ||
-    showModal === "a_immatriculer";
   const [modalDate, setModalDate] = useState("");
   const [modalDemandePar, setModalDemandePar] = useState("");
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showCertificatModal, setShowCertificatModal] = useState(false);
 
   const handleSaveUtilisateur = async () => {
     setSavingUser(true);
@@ -145,6 +173,18 @@ function UniteDetailPage() {
     } else if (showModal === "a_assurer" || showModal === "a_immatriculer") {
       updates.statut = showModal;
       updates.demande_par = modalDemandePar;
+    } else if (showModal === "assure" || showModal === "immatricule") {
+      updates.statut = "actif";
+    } else if (showModal === "brise") {
+      updates.statut = "brise";
+    } else if (showModal === "reparer") {
+      updates.statut = "actif";
+    } else if (showModal === "interdit_circuler") {
+      updates.statut = "interdit_circuler";
+    } else if (showModal === "lever_interdiction") {
+      updates.statut = "actif";
+    } else if (showModal === "archive") {
+      updates.statut = "archive";
     }
 
     await updateUnite({ data: { id: unite.id, updates } });
@@ -161,13 +201,24 @@ function UniteDetailPage() {
   return (
     <div className="print-area">
       <div className="no-print flex items-center justify-between mb-4">
-        <Link
-          to="/equipements"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour aux équipements
-        </Link>
+        {from === "calibrations" ? (
+          <Link
+            to="/inspections"
+            search={{ tab: "calibrations" }}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux calibrations laser
+          </Link>
+        ) : (
+          <Link
+            to="/equipements"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux équipements
+          </Link>
+        )}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowEditModal(true)}
@@ -295,10 +346,7 @@ function UniteDetailPage() {
             )}
             {unite.statut === "a_assurer" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("assure")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Confirmer l'assurance
@@ -306,16 +354,13 @@ function UniteDetailPage() {
             )}
             {unite.statut === "a_immatriculer" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("immatricule")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Confirmer l'immatriculation
               </button>
             )}
-            {unite.statut !== "vendu" && unite.statut !== "a_assurer" && (
+            {unite.statut !== "vendu" && unite.statut !== "archive" && unite.statut !== "a_assurer" && (
               <button
                 onClick={() => setShowModal("a_assurer")}
                 className="rounded-lg bg-assurance/15 border border-assurance/30 px-3 py-1.5 text-sm font-medium text-assurance hover:bg-assurance/25 transition-colors"
@@ -323,7 +368,7 @@ function UniteDetailPage() {
                 Marquer à assurer
               </button>
             )}
-            {unite.statut !== "vendu" && unite.statut !== "a_immatriculer" && (
+            {unite.statut !== "vendu" && unite.statut !== "archive" && unite.statut !== "a_immatriculer" && (
               <button
                 onClick={() => setShowModal("a_immatriculer")}
                 className="rounded-lg bg-immatriculation/15 border border-immatriculation/30 px-3 py-1.5 text-sm font-medium text-immatriculation hover:bg-immatriculation/25 transition-colors"
@@ -333,10 +378,7 @@ function UniteDetailPage() {
             )}
             {unite.statut !== "brise" && unite.statut !== "vendu" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "brise" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("brise")}
                 className="rounded-lg bg-destructive/15 border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/25 transition-colors"
               >
                 Marquer comme brisé
@@ -344,21 +386,42 @@ function UniteDetailPage() {
             )}
             {unite.statut === "brise" && (
               <button
-                onClick={async () => {
-                  await updateUnite({ data: { id: unite.id, updates: { statut: "actif" } } });
-                  router.invalidate();
-                }}
+                onClick={() => setShowModal("reparer")}
                 className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
               >
                 Réparé / Remettre en service
               </button>
             )}
-            {unite.statut !== "vendu" && (
+            {unite.statut !== "interdit_circuler" && unite.statut !== "vendu" && (
+              <button
+                onClick={() => setShowModal("interdit_circuler")}
+                className="rounded-lg bg-destructive/30 border border-destructive/50 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/40 transition-colors"
+              >
+                Interdit de circuler
+              </button>
+            )}
+            {unite.statut === "interdit_circuler" && (
+              <button
+                onClick={() => setShowModal("lever_interdiction")}
+                className="rounded-lg bg-success/15 border border-success/30 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/25 transition-colors"
+              >
+                Lever l'interdiction de circuler
+              </button>
+            )}
+            {unite.statut !== "vendu" && unite.statut !== "archive" && (
               <button
                 onClick={() => setShowModal("vendu")}
                 className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Marquer comme vendu
+              </button>
+            )}
+            {unite.statut !== "archive" && unite.statut !== "vendu" && (
+              <button
+                onClick={() => setShowModal("archive")}
+                className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Archiver
               </button>
             )}
           </div>
@@ -403,6 +466,71 @@ function UniteDetailPage() {
             <DateBadge date={unite.assurance_expiration} label="Expiration assurance" />
             <DateBadge date={unite.immatriculation_expiration} label="Expiration immatriculation" />
           </div>
+
+          {/* Documents téléversés */}
+          {documents.length > 0 && (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50 text-left">
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Date d'échéance</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Fichier</th>
+                    {isAdmin && <th className="px-3 py-2" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map((doc) => (
+                    <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+                      <td className="px-3 py-2 font-medium capitalize text-foreground">
+                        {doc.type === "immatriculation" ? "Immatriculation" : "Assurance"}
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {doc.date_echeance
+                          ? new Date(doc.date_echeance + "T00:00:00").toLocaleDateString("fr-CA")
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2">
+                        {doc.document_url ? (
+                          <a
+                            href={doc.document_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            {doc.nom_fichier ?? "Voir"}
+                          </a>
+                        ) : "—"}
+                      </td>
+                      {isAdmin && (
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Supprimer ce document ?")) return;
+                              await deleteDocumentVehicule({ data: { id: doc.id } });
+                              router.invalidate();
+                            }}
+                            className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowDocumentModal(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Ajouter un document
+          </button>
         </Section>
 
         {/* Section 5 - Inspections */}
@@ -431,15 +559,16 @@ function UniteDetailPage() {
                 {inspections.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Aucune inspection enregistrée.</p>
                 ) : (
-                  <div className="overflow-x-auto rounded-lg border border-border">
-                    <table className="w-full text-xs">
+                  <div className="rounded-lg border border-border">
+                    <table className="w-full table-fixed text-xs">
                       <thead>
                         <tr className="border-b border-border bg-secondary/40 text-left">
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Date</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Type</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">Résultat</th>
+                          <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Date</th>
+                          <th className="w-28 px-3 py-2 font-medium text-muted-foreground">Type</th>
+                          <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Résultat</th>
                           <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
-                          <th className="px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                                  <th className="w-14 px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                          {isAdmin && <th className="w-8 px-2 py-2" />}
                         </tr>
                       </thead>
                       <tbody>
@@ -448,7 +577,7 @@ function UniteDetailPage() {
                             <td className="px-3 py-2 text-muted-foreground">{fmt(i.date_inspection)}</td>
                             <td className="px-3 py-2">{i.type_inspection}</td>
                             <td className="px-3 py-2"><ResultatBadge resultat={i.resultat} /></td>
-                            <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{i.notes_inspection ?? "—"}</td>
+                            <td className="px-3 py-2 text-muted-foreground truncate">{i.notes_inspection ?? "—"}</td>
                             <td className="px-3 py-2">
                               {i.document_url ? (
                                 <a href={i.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
@@ -456,6 +585,24 @@ function UniteDetailPage() {
                                 </a>
                               ) : <span className="text-muted-foreground">—</span>}
                             </td>
+                            {isAdmin && (
+                              <td className="px-2 py-2 text-right">
+                                <button
+                                  onClick={async () => {
+                                    const msg = i.document_url
+                                      ? "Supprimer cette inspection ?\n\n⚠️ Un PDF est attaché. Pensez à le supprimer manuellement dans Supabase Storage (bucket documents-calibration ou documents-inspection)."
+                                      : "Supprimer cette inspection ?";
+                                    if (!confirm(msg)) return;
+                                    await deleteInspection({ data: { id: i.id } });
+                                    router.invalidate();
+                                  }}
+                                  title="Supprimer l'inspection"
+                                  className="text-muted-foreground hover:text-destructive transition-colors"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -468,13 +615,82 @@ function UniteDetailPage() {
                   className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  Ajouter une inspection
+                  {unite.categorie === "Laser" ? "Ajouter une calibration" : "Ajouter une inspection"}
                 </button>
               </>
             );
           })()}
         </Section>
 
+
+        {/* Section - Certificats de vérification mécanique */}
+        <Section title="Certificats de vérification mécanique">
+          {certificats.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aucun certificat enregistré.</p>
+          ) : (
+            <div className="rounded-lg border border-border">
+              <table className="w-full table-fixed text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/40 text-left">
+                    <th className="w-24 px-3 py-2 font-medium text-muted-foreground">Date</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Effectuée par</th>
+                    <th className="px-3 py-2 font-medium text-muted-foreground">Notes</th>
+                    <th className="w-14 px-3 py-2 font-medium text-muted-foreground">PDF</th>
+                    {isAdmin && <th className="w-8 px-2 py-2" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {certificats.map((c) => (
+                    <tr key={c.id} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {new Date(c.date_certificat + "T00:00:00").toLocaleDateString("fr-CA")}
+                      </td>
+                      <td className="px-3 py-2">{c.effectuee_par ?? "—"}</td>
+                      <td className="px-3 py-2 text-muted-foreground truncate">{c.notes ?? "—"}</td>
+                      <td className="px-3 py-2">
+                        {c.document_url ? (
+                          <a
+                            href={c.document_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:underline"
+                          >
+                            <FileText className="h-3.5 w-3.5" /> Voir
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      {isAdmin && (
+                        <td className="px-2 py-2 text-right">
+                          <button
+                            onClick={async () => {
+                              if (!confirm("Supprimer ce certificat ?")) return;
+                              await deleteCertificat({ data: { id: c.id } });
+                              router.invalidate();
+                            }}
+                            title="Supprimer le certificat"
+                            className="text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowCertificatModal(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary/15 border border-primary/30 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/25 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Ajouter un certificat
+          </button>
+        </Section>
 
         {/* Section 6 - Notes */}
         <Section title="Notes">
@@ -500,23 +716,27 @@ function UniteDetailPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">
-              {showModal === "remiser"
-                ? "Remiser l'unité"
-                : showModal === "deremiser"
-                  ? "Déremiser l'unité"
-                  : showModal === "a_remiser"
-                    ? "Marquer à remiser"
-                    : showModal === "a_deremiser"
-                      ? "Marquer à déremiser"
-                      : showModal === "a_assurer"
-                        ? "Marquer à assurer"
-                        : showModal === "a_immatriculer"
-                          ? "Marquer à immatriculer"
-                          : "Marquer comme vendu"}
+            <h3 className="text-lg font-semibold mb-1">
+              {showModal === "remiser" ? "Remiser l'unité"
+                : showModal === "deremiser" ? "Déremiser l'unité"
+                : showModal === "a_remiser" ? "Marquer à remiser"
+                : showModal === "a_deremiser" ? "Marquer à déremiser"
+                : showModal === "a_assurer" ? "Marquer à assurer"
+                : showModal === "a_immatriculer" ? "Marquer à immatriculer"
+                : showModal === "assure" ? "Confirmer l'assurance"
+                : showModal === "immatricule" ? "Confirmer l'immatriculation"
+                : showModal === "vendu" ? "Marquer comme vendu"
+                : showModal === "brise" ? "Marquer comme brisé"
+                : showModal === "reparer" ? "Remettre en service"
+                : showModal === "interdit_circuler" ? "Interdire de circuler"
+                : showModal === "lever_interdiction" ? "Lever l'interdiction de circuler"
+                : "Archiver l'unité"}
             </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Êtes-vous certain de vouloir effectuer cette action sur l'unité <span className="font-semibold text-foreground">{unite.numero_unite}</span> ?
+            </p>
             <div className="space-y-3">
-              {!isMarkModal && (
+              {(showModal === "remiser" || showModal === "deremiser" || showModal === "vendu") && (
                 <div>
                   <label className="text-sm text-muted-foreground">Date</label>
                   <input
@@ -527,7 +747,12 @@ function UniteDetailPage() {
                   />
                 </div>
               )}
-              {showModal !== "vendu" && (
+              {(showModal === "remiser" ||
+                showModal === "deremiser" ||
+                showModal === "a_remiser" ||
+                showModal === "a_deremiser" ||
+                showModal === "a_assurer" ||
+                showModal === "a_immatriculer") && (
                 <div>
                   <label className="text-sm text-muted-foreground">Demandé par</label>
                   <input
@@ -583,8 +808,23 @@ function UniteDetailPage() {
             setShowEditModal(false);
             router.invalidate();
           }}
+          entites={entiteNoms}
         />
       )}
+
+      <DocumentVehiculeModal
+        open={showDocumentModal}
+        onClose={() => setShowDocumentModal(false)}
+        onCreated={() => router.invalidate()}
+        uniteId={unite.id}
+      />
+
+      <CertificatMecaniqueModal
+        open={showCertificatModal}
+        onClose={() => setShowCertificatModal(false)}
+        onCreated={() => router.invalidate()}
+        uniteId={unite.id}
+      />
     </div>
   );
 }

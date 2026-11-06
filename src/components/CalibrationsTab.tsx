@@ -18,7 +18,10 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
   const [filtre, setFiltre] = useState<"all" | "ok" | "expiree" | "jamais">("all");
 
   const lasers = useMemo(
-    () => unites.filter((u) => u.categorie === "Laser").sort((a, b) => a.numero_unite.localeCompare(b.numero_unite)),
+    () =>
+      unites
+        .filter((u) => u.categorie === "Laser" && u.statut !== "vendu" && u.statut !== "archive")
+        .sort((a, b) => a.numero_unite.localeCompare(b.numero_unite)),
     [unites]
   );
 
@@ -29,6 +32,19 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
       const prev = m.get(c.unite_id);
       if (!prev || (prev.date_inspection ?? "") < (c.date_inspection ?? "")) {
         m.set(c.unite_id, c);
+      }
+    }
+    return m;
+  }, [calibrations]);
+
+  // Dernier document disponible par unité (même sans date d'inspection)
+  const lastDocByUnite = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of calibrations) {
+      if (!c.document_url) continue;
+      const prev = m.get(c.unite_id);
+      if (!prev) {
+        m.set(c.unite_id, c.document_url);
       }
     }
     return m;
@@ -96,6 +112,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
             <tr className="border-b border-border bg-secondary/50 text-left">
               <th className="px-4 py-3 font-medium text-muted-foreground">Unité</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Marque / Modèle</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">Type de mesure</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Utilisateur</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Dernière calibration</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">État</th>
@@ -129,6 +146,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
                     <Link
                       to="/equipements/$uniteId"
                       params={{ uniteId: r.unite.id }}
+                      search={{ from: "calibrations" }}
                       className="font-semibold text-primary hover:underline"
                     >
                       {r.unite.numero_unite}
@@ -137,15 +155,16 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
                   <td className="px-4 py-3 text-muted-foreground">
                     {r.unite.marque} {r.unite.modele}
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.unite.type_mesure ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.unite.utilisateur ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {r.lastDate ? new Date(r.lastDate).toLocaleDateString("fr-CA") : "—"}
                   </td>
                   <td className="px-4 py-3">{badge}</td>
                   <td className="px-4 py-3">
-                    {r.last?.document_url ? (
+                    {lastDocByUnite.get(r.unite.id) ? (
                       <a
-                        href={r.last.document_url}
+                        href={lastDocByUnite.get(r.unite.id)!}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
@@ -161,7 +180,7 @@ export function CalibrationsTab({ calibrations, unites }: Props) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                   Aucun laser trouvé
                 </td>
               </tr>

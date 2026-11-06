@@ -19,7 +19,7 @@ function ArchivesPage() {
   const unites = Route.useLoaderData() as Unite[];
   const router = useRouter();
   const { isAdmin } = useAuth();
-  const vendues = unites.filter((u) => u.statut === "vendu");
+  const vendues = unites.filter((u) => u.statut === "vendu" || u.statut === "archive");
 
   const fmt = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("fr-CA") : "—";

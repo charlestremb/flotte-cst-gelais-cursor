@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { getUnites, deleteUnite, updateUnite } from "@/lib/unites.functions";
 import type { Unite } from "@/lib/unites.functions";
+import { getEntites } from "@/lib/entites.functions";
+import type { Entite } from "@/lib/entites.functions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { UniteFormModal } from "@/components/UniteFormModal";
 import { Search, Plus, Download, Trash2, X } from "lucide-react";
@@ -9,12 +11,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { STATUT_OPTIONS } from "@/lib/statuts";
 
 export const Route = createFileRoute("/equipements/")({
-  loader: () => getUnites(),
+  loader: async () => {
+    const [unites, entites] = await Promise.all([getUnites(), getEntites()]);
+    return { unites, entites };
+  },
   component: EquipementsPage,
 });
 
 function EquipementsPage() {
-  const unites = Route.useLoaderData() as Unite[];
+  const { unites, entites } = Route.useLoaderData() as { unites: Unite[]; entites: Entite[] };
+  const entiteNoms = entites.map((e) => e.nom);
   const router = useRouter();
   const { isAdmin } = useAuth();
   const [search, setSearch] = useState("");
@@ -108,8 +114,9 @@ function EquipementsPage() {
   const categories = [...new Set(unites.map((u: Unite) => u.categorie).filter(Boolean))].sort() as string[];
 
   const filtered = unites.filter((u) => {
-    // Les unités vendues sont archivées et ne s'affichent pas ici (sauf si on filtre explicitement sur "vendu")
+    // Les unités vendues/archivées ne s'affichent pas ici (sauf si filtre explicite)
     if (statut !== "vendu" && u.statut === "vendu") return false;
+    if (statut !== "archive" && u.statut === "archive") return false;
     if (entite !== "all" && u.entite !== entite) return false;
     if (categorie !== "all" && u.categorie !== categorie) return false;
     if (statut !== "all" && u.statut !== statut) return false;
@@ -191,8 +198,9 @@ function EquipementsPage() {
             className="h-9 rounded-lg border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">Toutes les entités</option>
-            <option value="CSTG">CSTG</option>
-            <option value="9487-6216">9487-6216</option>
+            {entiteNoms.map((nom) => (
+              <option key={nom} value={nom}>{nom}</option>
+            ))}
           </select>
           <select
             value={categorie}
@@ -215,10 +223,9 @@ function EquipementsPage() {
             ))}
           </select>
         </div>
-      </div>
 
-      {/* Barre d'actions groupées */}
-      {selected.size > 0 && (
+        {/* Barre d'actions groupées */}
+        {selected.size > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
           <span className="text-sm font-medium text-foreground">
             {selected.size} unité{selected.size > 1 ? "s" : ""} sélectionnée{selected.size > 1 ? "s" : ""}
@@ -277,7 +284,8 @@ function EquipementsPage() {
             </button>
           </div>
         </div>
-      )}
+        )}
+      </div>
 
       {/* Tableau */}
       <div className="mt-5 rounded-xl border border-border">
@@ -410,6 +418,7 @@ function EquipementsPage() {
           setShowAdd(false);
           router.invalidate();
         }}
+        entites={entiteNoms}
       />
 
       {confirmDelete && (

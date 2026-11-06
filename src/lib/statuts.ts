@@ -9,15 +9,17 @@ export function isActionStatut(statut: string | null | undefined): statut is Act
   return !!statut && (ACTION_STATUTS as readonly string[]).includes(statut);
 }
 
-/** Liste complète des statuts (filtres, formulaires). */
+/** Liste complète des statuts d'une unité (filtres, formulaires). */
 export const STATUT_OPTIONS: { value: string; label: string }[] = [
   { value: "actif", label: "Actif" },
   { value: "brise", label: "Brisé" },
   { value: "hors_usage", label: "Hors d'usage" },
+  { value: "interdit_circuler", label: "Interdit de circuler" },
   { value: "remise", label: "Remisé" },
   { value: "a_remiser", label: "À remiser" },
   { value: "a_deremiser", label: "À déremiser" },
   { value: "a_assurer", label: "À assurer" },
   { value: "a_immatriculer", label: "À immatriculer" },
   { value: "vendu", label: "Vendu" },
+  { value: "archive", label: "Archivé" },
 ];
